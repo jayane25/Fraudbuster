@@ -1,0 +1,63 @@
+{
+  // Run and Debug panel (Ctrl+Shift+D): pick one of these and press F5.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "1. Fraudbusters Workspace (web app on localhost:8600)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["app.server:app", "--port", "8600"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "serverReadyAction": {
+        "pattern": "Uvicorn running on (https?://\\S+)",
+        "uriFormat": "%s",
+        "action": "openExternally"
+      }
+    },
+    {
+      "name": "2. Detection engine in the terminal (alerts + accuracy)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/aml.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "3. Research dashboard (Streamlit on localhost:8501)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "streamlit",
+      "args": ["run", "app/dashboard.py", "--server.port", "8501"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "4. Regenerate synthetic data",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/data/generate_synthetic.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "5. IBM model (needs Kaggle files in data/)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/ibm_model.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "6. Run all tests",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["tests", "-v"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    }
+  ]
+}

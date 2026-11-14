@@ -359,6 +359,8 @@ def llm_summary(a: Alert, df: pd.DataFrame) -> str | None:
 
 # ---------------------------------------------------------------- CLI
 def main():
+    if hasattr(sys.stdout, "reconfigure"):          # Windows terminals default to cp1252, which has no rupee sign
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), "..", "data", "transactions.csv")
     df = load_transactions(path)
     alerts = detect_all(df)

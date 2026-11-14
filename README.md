@@ -47,6 +47,24 @@ python -m venv .venv
 
 Run the tests: `.venv/Scripts/python -m pytest tests`
 
+### Run it in VS Code
+
+1. **File > Open Folder…** and pick this folder. Install the recommended **Python** extension when VS Code asks.
+2. First time on a new laptop: **Terminal > Run Task… > Setup: create .venv and install packages** (or double click `run.bat` once).
+3. Open **Run and Debug** (Ctrl+Shift+D), choose a configuration, press **F5**:
+
+| Configuration | What it runs |
+|---|---|
+| 1. Fraudbusters Workspace | the web app; the browser opens http://localhost:8600 |
+| 2. Detection engine in the terminal | `src/aml.py`: prints the alerts and precision / recall / F1 vs the baseline |
+| 3. Research dashboard | the Streamlit dashboard on http://localhost:8501 |
+| 4. Regenerate synthetic data | `data/generate_synthetic.py` |
+| 5. IBM model | `src/ibm_model.py` (needs the Kaggle files) |
+| 6. Run all tests | the 16 tests in `tests/` |
+
+Tip: click left of a line number in `src/aml.py` (for example inside `detect_cycles`) to set a red breakpoint, then run
+configuration 2: VS Code pauses there and you can inspect the money trail step by step.
+
 ### What you can do in the Workspace
 
 * **Cases:** alert queue ranked by risk, interactive money trail graph, ▶ replay of the scheme in time order,
