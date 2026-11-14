@@ -217,4 +217,4 @@ IBM data: download `HI-Small_Trans.csv` and `HI-Small_Patterns.txt` from Kaggle
 * Next: graph neural networks, run the IBM model inside the Workspace, analyst logins, a live transaction stream, and AI written case notes
   (`llm_summary` in `src/aml.py`, needs `ANTHROPIC_API_KEY`).
 
-Slides: [docs/FlowTrace_v4_IBM.pptx](docs/FlowTrace_v4_IBM.pptx)
+Slides: [docs/Fraudbusters_v5_ML.pptx](docs/Fraudbusters_v5_ML.pptx) (final, with ML results). Earlier Review 2 deck: [docs/FlowTrace_v4_IBM.pptx](docs/FlowTrace_v4_IBM.pptx)
