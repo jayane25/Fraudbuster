@@ -12,6 +12,7 @@
 <aside class="rail">
   <div class="brand"><span class="mark"></span><span>Fraud<b>busters</b></span></div>
   <nav>
+    <a href="#/home" data-view="home"><i>⌂</i><span>Start here</span></a>
     <a href="#/cases" data-view="cases"><i>▤</i><span>Cases</span><em id="nav-new"></em></a>
     <a href="#/board" data-view="board"><i>▥</i><span>Board</span></a>
     <a href="#/overview" data-view="overview"><i>◔</i><span>Overview</span></a>
@@ -29,21 +30,24 @@
     <div id="hits" class="hits"></div>
   </div>
   <div class="top-meta" id="top-meta"></div>
+  <button class="tour-btn" id="tour-btn" title="A 1 minute walk through of the screen">? Guided tour</button>
 </header>
 
 <main id="view"></main>
 <div id="toast" class="toast"></div>
+<div id="tour" class="tour" role="dialog" aria-label="Guided tour"><div class="tour-hole"></div><div class="tour-pop"></div></div>
 
 <template id="tpl-cases">
   <section class="cases">
     <div class="queue">
       <div class="queue-head">
         <div class="queue-title"><b>Alert queue</b><span id="queue-count"></span></div>
+        <p class="queue-help">Suspicious patterns found in the transfers. Click one to open it.</p>
         <div class="chips" id="typ-chips"></div>
         <div class="queue-filters">
-          <select id="f-verdict"><option value="">All verdicts</option><option value="laundering">Likely laundering</option><option value="genuine">Likely genuine</option></select>
+          <select id="f-verdict" title="Show only what the AI thinks is laundering, or only what it thinks is genuine"><option value="">All AI verdicts</option><option value="laundering">Likely laundering</option><option value="genuine">Likely genuine</option></select>
           <select id="f-status"><option value="">All statuses</option></select>
-          <select id="f-sort"><option value="ml">ML score</option><option value="risk">Pattern risk</option><option value="amount">Largest amount</option><option value="start">Most recent</option></select>
+          <select id="f-sort" title="How to order the list"><option value="ml">Sort: most suspicious</option><option value="risk">Sort: pattern risk</option><option value="amount">Sort: largest amount</option><option value="start">Sort: most recent</option></select>
         </div>
       </div>
       <ol class="queue-list" id="queue"></ol>
@@ -80,5 +84,6 @@
 <script src="/static/vendor/cytoscape.min.js"></script>
 <script src="/static/vendor/chart.umd.min.js"></script>
 <script src="/static/app.js"></script>
+<script src="/static/guide.js"></script>
 </body>
 </html>

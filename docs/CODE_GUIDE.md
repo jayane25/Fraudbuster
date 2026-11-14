@@ -111,15 +111,19 @@ Each `@app.get` or `@app.post` line is a web address the frontend can call:
 * `style.css`: the look.
 * `app.js`: all the behaviour. Key functions:
   * `boot` (line 24) loads data, `route` (line 44) shows the right screen for the address (`#/cases`, `#/board` …).
-  * `drawGraph` (line 196) draws the money trail with **Cytoscape.js** (a graph drawing library).
-  * `applyReplay` / `togglePlay` (lines 233, 243): the ▶ replay. Edges appear one by one in time order.
-  * `trace` (line 257): calls `/api/trace` and adds the new accounts to the graph (Follow money).
-  * `updateCase` (line 173): sends status, notes and freeze changes to the backend.
-  * `renderBoard` (line 379): the drag and drop board.
-  * `renderOverview`, `renderEvidence` (lines 413, 453): charts with **Chart.js**.
-  * `keys` (line 368): keyboard shortcuts J, K, Space, F, S.
+  * `drawGraph` (line 199) draws the money trail with **Cytoscape.js** (a graph drawing library).
+  * `applyReplay` / `togglePlay` (lines 236, 246): the ▶ replay. Edges appear one by one in time order.
+  * `trace` (line 260): calls `/api/trace` and adds the new accounts to the graph (Follow money).
+  * `updateCase` (line 176): sends status, notes and freeze changes to the backend.
+  * `renderBoard` (line 382): the drag and drop board.
+  * `renderOverview`, `renderEvidence` (lines 416, 456): charts with **Chart.js**.
+  * `keys` (line 371): keyboard shortcuts J, K, Space, F, S.
 
 The frontend never decides what is suspicious. It only shows what the backend sends.
+
+* `guide.js`: the beginner layer. `renderHome` draws the **Start here** page (what the app does, 3 steps, the 4 shapes,
+  a dictionary of terms); `startTour` runs the **guided tour** that highlights each part of the screen (open `#/tour`);
+  `HELP` and `hint` add the little *i* help bubbles next to labels.
 
 ## 4b. The ML model: `src/features.py` and `src/train_model.py`
 
@@ -156,7 +160,7 @@ cases (graph rules alone: 39 of 91).
 to the same customer", "the money went back to someone who had paid in (chit fund)".
 
 **In the app:** `app/server.py` loads the model at start up (lines 54 to 80), gives every alert a score and a
-verdict, and `app/web/app.js` shows the verdict badge in the queue and the evidence in the Story tab (line 339).
+verdict, and `app/web/app.js` shows the verdict badge in the queue and the evidence in the Story tab (line 342).
 
 ## 5. `src/str_report.py`: the STR PDF
 

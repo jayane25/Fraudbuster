@@ -234,14 +234,14 @@
     },
     {
       "file": "app/web/app.js",
-      "line": 202,
+      "line": 205,
       "selection": {
         "start": {
-          "line": 196,
+          "line": 199,
           "character": 1
         },
         "end": {
-          "line": 232,
+          "line": 235,
           "character": 1
         }
       },
@@ -250,19 +250,35 @@
     },
     {
       "file": "app/web/app.js",
-      "line": 233,
+      "line": 236,
       "selection": {
         "start": {
-          "line": 233,
+          "line": 236,
           "character": 1
         },
         "end": {
-          "line": 249,
+          "line": 252,
           "character": 1
         }
       },
       "title": "16. The replay button",
       "description": "The ▶ replay: transfers appear one by one in the order they happened, so the investigator sees how the scheme unfolded.\n\n**SAY:** \"Replay shows the crime in time order, which makes it easy to explain to a manager or in court.\""
+    },
+    {
+      "file": "app/web/guide.js",
+      "line": 1,
+      "selection": {
+        "start": {
+          "line": 1,
+          "character": 1
+        },
+        "end": {
+          "line": 3,
+          "character": 1
+        }
+      },
+      "title": "16b. Made for beginners: Start here page and guided tour",
+      "description": "`guide.js` makes the app friendly for someone who knows nothing about laundering:\n\n* **Start here** page (`renderHome`): what the app does, how it works in 3 steps, the 4 suspicious shapes with small diagrams, and a dictionary of terms\n* **Guided tour** (`startTour`): highlights each part of the screen with a plain English explanation. Open `#/tour` or click **? Guided tour**\n* **Help bubbles** (`HELP`, `hint`): hover the little *i* next to any label\n\n**SAY:** \"We designed it so a new analyst, or a judge, can understand it in one minute without training.\""
     },
     {
       "file": "src/str_report.py",
@@ -378,14 +394,14 @@
     },
     {
       "file": "app/web/app.js",
-      "line": 339,
+      "line": 342,
       "selection": {
         "start": {
-          "line": 335,
+          "line": 338,
           "character": 1
         },
         "end": {
-          "line": 350,
+          "line": 353,
           "character": 1
         }
       },

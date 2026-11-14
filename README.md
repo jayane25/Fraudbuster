@@ -108,6 +108,9 @@ configuration 2: VS Code pauses there and you can inspect the money trail step b
 
 ### What you can do in the Workspace
 
+* **New to anti money laundering? Start here.** The app opens on a plain English *Start here* page (what it does,
+  how it works in 3 steps, the 4 suspicious shapes, a dictionary of terms). **? Guided tour** at the top walks through
+  the screen in 9 steps (or open `#/tour`), and the little *i* next to each label explains it.
 * **ML verdicts:** every alert is marked *Likely laundering* or *Likely genuine* by the hybrid model, with a
   *Genuine or laundering?* evidence list in the Story tab. Filter the queue by verdict; it is sorted by ML score.
 * **Cases:** alert queue, interactive money trail graph, ▶ replay of the scheme in time order,

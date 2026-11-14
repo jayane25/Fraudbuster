@@ -42,13 +42,15 @@ async function refreshAlerts() {
 }
 
 function route() {
-  const [, view = "cases", id] = location.hash.split("/");
+  const [, view = "home", id] = location.hash.split("/");
   $$("nav a").forEach((a) => a.classList.toggle("on", a.dataset.view === view));
   S.charts.forEach((c) => c.destroy()); S.charts = [];
   stopPlay();
   if (view === "board") return renderBoard();
   if (view === "overview") return renderOverview();
   if (view === "evidence") return renderEvidence();
+  if (view === "home") return renderHome();
+  if (view === "tour") return startTour(Number(id) || 1);
   renderCases(id);
 }
 
@@ -92,7 +94,7 @@ function renderCases(id) {
     S.detail = null; if (S.cy) { S.cy.destroy(); S.cy = null; }
     v.innerHTML = ""; v.append($("#tpl-cases").content.cloneNode(true));
     const typs = Object.entries(S.meta.typologies);
-    $("#typ-chips").innerHTML = typs.map(([k, l]) => `<button class="chip ${S.typ.has(k) ? "on" : ""}" data-k="${k}">${esc(l.replace(/ \(.*/, ""))}</button>`).join("");
+    $("#typ-chips").innerHTML = typs.map(([k, l]) => `<button class="chip ${S.typ.has(k) ? "on" : ""}" data-k="${k}" title="${esc(HELP[k])}">${esc(l.replace(/ \(.*/, ""))}</button>`).join("");
     $("#typ-chips").onclick = (e) => { const b = e.target.closest(".chip"); if (!b) return; S.typ.has(b.dataset.k) ? S.typ.delete(b.dataset.k) : S.typ.add(b.dataset.k); b.classList.toggle("on"); drawQueue(); };
     $("#f-status").innerHTML += S.meta.statuses.map((s) => `<option>${s}</option>`).join("");
     $("#f-status").value = S.status; $("#f-sort").value = S.sort; $("#f-verdict").value = S.verdict;
@@ -149,6 +151,7 @@ function drawHead() {
   $("#case-head").innerHTML = `
     <div class="case-title"><h1>${esc(d.label)}</h1><span class="mono">${d.id}</span>
       <span class="pill s-${c.status}">${c.status}</span></div>
+    <p class="plain">${esc(d.summary.split(/(?<=\.)\s/)[0])}</p>
     <div class="case-actions">
       <select id="c-status" title="Case status">${opt(S.meta.statuses, c.status)}</select>
       <select id="c-assign" title="Assignee">${opt(S.meta.analysts, c.assignee, "Unassigned")}</select>
@@ -156,13 +159,13 @@ function drawHead() {
       <a class="btn primary" id="c-str" href="/api/alerts/${d.id}/str.pdf" target="_blank" style="text-decoration:none">STR draft</a>
     </div>
     <div class="case-facts">
-      ${d.verdict ? `<span>ML verdict<b class="vt-${d.verdict}">${VERDICT[d.verdict]} ${Math.round(d.ml)}%</b></span>` : ""}
-      <span>Pattern risk<b style="color:${riskColor(d.risk)}">${Math.round(d.risk)} / 100</b></span>
-      <span>Money moved<b>${inr(d.amount)}</b></span>
-      <span>Accounts<b>${d.accounts}</b></span>
-      <span>Transfers<b>${d.tx}</b></span>
-      <span>Time span<b>${d.hours} h</b></span>
-      <span>Started<b>${fmtT(d.start)}</b></span>
+      ${d.verdict ? `<span>AI verdict ${hint("ml")}<b class="vt-${d.verdict}">${VERDICT[d.verdict]} ${Math.round(d.ml)}%</b></span>` : ""}
+      <span>Pattern risk ${hint("risk")}<b style="color:${riskColor(d.risk)}">${Math.round(d.risk)} / 100</b></span>
+      <span>Money moved ${hint("money")}<b>${inr(d.amount)}</b></span>
+      <span>Accounts ${hint("accounts")}<b>${d.accounts}</b></span>
+      <span>Transfers ${hint("transfers")}<b>${d.tx}</b></span>
+      <span>Time span ${hint("span")}<b>${d.hours} h</b></span>
+      <span>Started ${hint("started")}<b>${fmtT(d.start)}</b></span>
     </div>`;
   $("#c-status").onchange = (e) => updateCase({ status: e.target.value }, `Status set to ${e.target.value}`);
   $("#c-assign").onchange = (e) => updateCase({ assignee: e.target.value }, e.target.value ? `Assigned to ${e.target.value}` : "Unassigned");
@@ -337,7 +340,7 @@ function drawTab() {
   if (S.tab === "story") {
     const sig = d.signals || [];
     const verdictBox = d.verdict ? `<div class="vbox v-${d.verdict}">
-        <div><b>${VERDICT[d.verdict]}</b> · hybrid model score ${Math.round(d.ml)}% (alert threshold ${Math.round(d.ml_threshold)}%)</div>
+        <div><b>${VERDICT[d.verdict]}</b> · AI score ${Math.round(d.ml)}% (above ${Math.round(d.ml_threshold)}% counts as laundering)</div>
         <small>${d.verdict === "genuine"
           ? "The shape matches a laundering pattern, but the context looks like genuine activity. Suggested action: review and close."
           : "Both the shape and the context point to laundering. Suggested action: investigate and consider an STR."}</small></div>
