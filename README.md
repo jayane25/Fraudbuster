@@ -47,6 +47,12 @@ python -m venv .venv
 
 Run the tests: `.venv/Scripts/python -m pytest tests`
 
+### Guided code tour (for presenting the code)
+
+Install the **CodeTour** extension (VS Code recommends it when you open the folder). Then open the **CodeTour**
+panel at the bottom of the Explorer sidebar and click ▶ next to *Fraudbusters: code walkthrough for the judges*.
+It walks through 22 steps, jumping to each important line with an explanation and buttons that run the code.
+
 ### Run it in VS Code
 
 1. **File > Open Folder…** and pick this folder. Install the recommended **Python** extension when VS Code asks.

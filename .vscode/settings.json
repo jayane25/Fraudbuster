@@ -6,6 +6,15 @@
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
   "python.testing.pytestArgs": ["tests"],
+  // Presentation friendly: readable on a projector, fewer distractions.
+  "editor.fontSize": 16,
+  "terminal.integrated.fontSize": 15,
+  "editor.minimap.enabled": false,
+  "editor.wordWrap": "on",
+  "editor.renderWhitespace": "none",
+  "workbench.startupEditor": "none",
+  "codetour.promptForWorkspaceTours": true,
+  "codetour.showMarkers": true,
   "files.exclude": {
     "**/__pycache__": true,
     ".pytest_cache": true

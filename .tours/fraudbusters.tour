@@ -1,0 +1,156 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "Fraudbusters: code walkthrough for the judges",
+  "description": "Click Next to jump through the code. Each box says what the code does and what to tell the judges.",
+  "isPrimary": true,
+  "steps": [
+    {
+      "title": "Welcome (read this first)",
+      "description": "## Fraudbusters code walkthrough\n\nThis tour jumps to each important piece of code. The yellow highlight shows the lines to point at.\n\n* **Next →** (bottom right of this box) goes to the next step.\n* **SAY** = what to tell the judges.\n* Grey command lines are buttons: click them to run the code in the terminal.\n\n### How the code fits together\n\n```\ndata/generate_synthetic.py   makes bank transactions with planted laundering\n        ↓\nsrc/aml.py                   THE BRAIN: graph + 4 detectors + risk score\n        ↓\napp/server.py                backend (FastAPI): sends alerts to the website\n        ↓\napp/web/app.js               frontend: graph, replay, case board\n```\n\n**SAY:** \"Our project has three layers: a detection engine in Python, a FastAPI backend, and a JavaScript frontend. Let me walk you through each.\""
+    },
+    {
+      "file": "data/generate_synthetic.py",
+      "line": 3,
+      "selection": { "start": { "line": 1, "character": 1 }, "end": { "line": 11, "character": 1 } },
+      "title": "1. Where the data comes from",
+      "description": "Real bank data is confidential, so we generate realistic transactions: salaries, shopping, people paying friends.\n\nThen we **plant 160 laundering schemes** of 4 types and label them, so we can measure exactly how many we catch.\n\n**SAY:** \"We generate 41,000 transactions with 160 hidden laundering cases. Because we know where they are, we can measure our accuracy honestly. We also tested on IBM's public benchmark, I'll show that later.\""
+    },
+    {
+      "file": "src/aml.py",
+      "line": 21,
+      "selection": { "start": { "line": 21, "character": 1 }, "end": { "line": 32, "character": 80 } },
+      "title": "2. The detection engine: rule settings",
+      "description": "This is the **main file**. These numbers are the rules every detector follows, for example:\n\n* `FAN_WINDOW_H = 72` → look at 72 hour windows\n* `FAN_MIN_PARTIES = 8` → at least 8 different people\n* `CHAIN_MAX_GAP_H = 6` → a mule forwards money within 6 hours\n* `PASS_RATIO` → each hop keeps 90 to 100% of the money\n\n**SAY:** \"All our rules are in one place at the top, so a bank can tune them without touching the logic.\""
+    },
+    {
+      "file": "src/aml.py",
+      "line": 77,
+      "selection": { "start": { "line": 77, "character": 1 }, "end": { "line": 82, "character": 1 } },
+      "title": "3. Building the graph",
+      "description": "Every **account becomes a node** and every **transfer becomes an arrow** (edge) carrying its amount and time. We use the NetworkX library.\n\n**SAY:** \"This is the core idea. Banks look at one transaction at a time. We connect them all into a graph, so patterns across many accounts become visible.\""
+    },
+    {
+      "file": "src/aml.py",
+      "line": 108,
+      "selection": { "start": { "line": 96, "character": 1 }, "end": { "line": 127, "character": 1 } },
+      "title": "4. Detector 1 and 2: fan in and fan out (smurfing)",
+      "description": "For every account we go through the money it received (fan in) or sent (fan out) in time order.\n\nLine 108 is a **sliding window**: two pointers `i` and `j` keep only transfers within 72 hours of each other. If 8 or more different accounts fall inside, it is suspicious.\n\n**SAY:** \"Smurfing means splitting money into many small deposits into one account. We slide a 72 hour window over each account's history and count how many different senders appear. The two pointer window makes it fast: each transfer is visited only once.\""
+    },
+    {
+      "file": "src/aml.py",
+      "line": 89,
+      "selection": { "start": { "line": 86, "character": 1 }, "end": { "line": 93, "character": 1 } },
+      "title": "5. How suspicious is the fan? (score)",
+      "description": "The score goes up when:\n* there are many senders (`party_term`)\n* amounts sit **just under the ₹10,000 reporting limit** (`near_limit`, line 89): classic structuring\n* amounts are very similar (`uniformity`)\n* the total is large (`big`)\n\n**SAY:** \"Launderers keep each deposit just below the reporting limit to avoid checks. Line 89 detects exactly that.\""
+    },
+    {
+      "file": "src/aml.py",
+      "line": 152,
+      "selection": { "start": { "line": 139, "character": 1 }, "end": { "line": 156, "character": 1 } },
+      "title": "6. Speed trick: following money fast",
+      "description": "To follow money we constantly ask: **where did this money go next?**\n\n`_OutIndex` keeps each account's outgoing transfers sorted by time, so line 152 can use **binary search** (`bisect`) instead of scanning all 41,000 rows.\n\n**SAY:** \"Following money hop by hop could be slow. We index outgoing transfers by time and use binary search, so each lookup is instant.\""
+    },
+    {
+      "file": "src/aml.py",
+      "line": 174,
+      "selection": { "start": { "line": 164, "character": 1 }, "end": { "line": 187, "character": 1 } },
+      "title": "7. Detector 3: round trip cycles",
+      "description": "From every transfer we **follow the money** hop by hop (a depth first search with a `stack`). A hop only counts if it happens within 48 hours and keeps almost the full amount.\n\nLine 174: if the money **arrives back where it started** after 3 or more hops, it is a cycle.\n\n**SAY:** \"Round tripping sends money in a loop to fake business turnover. We follow each transfer forward, and if the money comes back to its origin with almost nothing lost, we flag it.\"\n\nTip: click left of line 174 to set a red breakpoint, then run configuration 2 with F5 to pause here live."
+    },
+    {
+      "file": "src/aml.py",
+      "line": 190,
+      "selection": { "start": { "line": 190, "character": 1 }, "end": { "line": 230, "character": 1 } },
+      "title": "8. Detector 4: mule chains",
+      "description": "Same follow the money search, but looking for the **longest straight line** of accounts that each pass the money on within 6 hours, keeping 90 to 100%.\n\nIt runs twice: fast mules, and **patient mules** (slower hops, but the amount must match almost exactly).\n\n**SAY:** \"Money mules are accounts that receive money and immediately forward it. We find the longest such chain, and we also catch patient mules who wait up to 2 days.\""
+    },
+    {
+      "file": "src/aml.py",
+      "line": 239,
+      "selection": { "start": { "line": 233, "character": 1 }, "end": { "line": 244, "character": 1 } },
+      "title": "9. Risk score 0 to 100",
+      "description": "Line 239 is the formula:\n\n**40%** how cleanly the pattern matches + **25%** money involved + **20%** speed + **15%** number of accounts, times a weight per typology.\n\nAlerts are sorted by risk and named AL0001, AL0002, …\n\n**SAY:** \"Investigators have limited time, so every alert gets a risk score and the queue is sorted with the most dangerous case first.\""
+    },
+    {
+      "file": "src/aml.py",
+      "line": 247,
+      "selection": { "start": { "line": 247, "character": 1 }, "end": { "line": 256, "character": 1 } },
+      "title": "10. Running all detectors (live demo)",
+      "description": "`detect_all` runs the 4 detectors in order and scores them.\n\n**Click the command below to run the engine in the terminal:**\n\n>> .\\.venv\\Scripts\\python src/aml.py\n\nIt prints the alerts and our accuracy against a normal bank rule.\n\n**SAY:** \"Here it is running live: Fraudbusters reaches F1 0.90 while the threshold rule banks use today gets 0.45.\""
+    },
+    {
+      "file": "src/aml.py",
+      "line": 268,
+      "selection": { "start": { "line": 268, "character": 1 }, "end": { "line": 296, "character": 1 } },
+      "title": "11. Comparing against today's bank rules",
+      "description": "`threshold_baseline` is what a basic bank system does: flag every transfer of ₹10,000 or more, or 10+ transfers a day.\n\n`evaluate` measures **precision** (of what we flagged, how much was really laundering) and **recall** (of all laundering, how much we caught).\n\n**SAY:** \"We always compare against the simple rule, so our numbers mean something.\""
+    },
+    {
+      "file": "app/server.py",
+      "line": 37,
+      "selection": { "start": { "line": 36, "character": 1 }, "end": { "line": 37, "character": 80 } },
+      "title": "12. Backend: FastAPI server",
+      "description": "When the server starts, it loads the transactions and runs the detection engine **once** (lines 36 and 37), then keeps the alerts in memory so the website is fast.\n\nEvery line starting with `@app.get` or `@app.post` below is a web address the frontend calls.\n\n**SAY:** \"The backend is FastAPI. It runs our engine once at startup and serves alerts, money trails and reports to the website through an API.\""
+    },
+    {
+      "file": "app/server.py",
+      "line": 210,
+      "selection": { "start": { "line": 202, "character": 1 }, "end": { "line": 229, "character": 1 } },
+      "title": "13. Case actions and the audit trail",
+      "description": "When an investigator changes a status, adds a note or freezes an account, this function saves it, and **every change is written to an audit log** with who did it and when (lines 210 to 225).\n\n**SAY:** \"Regulators require a record of every decision. Each action is logged with the analyst's name and time, and saved to disk.\""
+    },
+    {
+      "file": "app/server.py",
+      "line": 162,
+      "selection": { "start": { "line": 161, "character": 1 }, "end": { "line": 200, "character": 1 } },
+      "title": "14. Follow the money",
+      "description": "Behind the **Follow money** button. From any account, follow where the money went next (or came from), up to 4 hops, keeping only transfers that carry a real share of the amount.\n\n**SAY:** \"From any suspicious account, the investigator can follow the money further than the original alert to find the rest of the network.\""
+    },
+    {
+      "file": "app/web/app.js",
+      "line": 196,
+      "selection": { "start": { "line": 190, "character": 1 }, "end": { "line": 226, "character": 1 } },
+      "title": "15. Frontend: drawing the money trail",
+      "description": "The browser side. `drawGraph` uses the **Cytoscape.js** library to draw the accounts and arrows you see in the app, coloured by role (collector, depositor, mule).\n\n**SAY:** \"The frontend is plain JavaScript. It only displays what the backend sends; all detection happens on the server.\""
+    },
+    {
+      "file": "app/web/app.js",
+      "line": 227,
+      "selection": { "start": { "line": 227, "character": 1 }, "end": { "line": 243, "character": 1 } },
+      "title": "16. The replay button",
+      "description": "The ▶ replay: transfers appear one by one in the order they happened, so the investigator sees how the scheme unfolded.\n\n**SAY:** \"Replay shows the crime in time order, which makes it easy to explain to a manager or in court.\""
+    },
+    {
+      "file": "src/str_report.py",
+      "line": 50,
+      "selection": { "start": { "line": 50, "character": 1 }, "end": { "line": 63, "character": 1 } },
+      "title": "17. Suspicious Transaction Report (STR)",
+      "description": "Banks in India must file an STR with FIU-IND. This file builds a draft PDF: grounds of suspicion (this `GROUNDS` list, one set per typology), a narrative, the accounts with their roles, and the transactions.\n\n**SAY:** \"One click turns an alert into a draft STR, which saves investigators hours of paperwork.\""
+    },
+    {
+      "file": "src/ibm_model.py",
+      "line": 70,
+      "selection": { "start": { "line": 44, "character": 1 }, "end": { "line": 77, "character": 1 } },
+      "title": "18. Real data: IBM benchmark features",
+      "description": "On IBM's public money laundering dataset (5 million transactions), our fixed rules caught only 8%. So we built a **learned model** on graph features of each account:\n\n* how many different accounts it pays and gets paid by\n* **pass through** (line 70): money comes in and goes straight out\n* payment type (ACH), round amounts, time of day\n\n**SAY:** \"We were honest: our rules failed on real format data. So we turned the same graph ideas into features and trained a model.\""
+    },
+    {
+      "file": "src/ibm_model.py",
+      "line": 93,
+      "selection": { "start": { "line": 92, "character": 1 }, "end": { "line": 98, "character": 1 } },
+      "title": "19. No cheating: tested on unseen days",
+      "description": "Line 93: features are computed **separately for each time period**, so nothing from the test days leaks into training. The model (gradient boosting, line 96) trains on 1 to 6 Sep and is tested on 8 to 10 Sep.\n\nResult: **42% of our alerts are real laundering** vs **0.15%** for threshold rules. Investigators check **1,556 alerts instead of 560,549**.\n\n**SAY:** \"We test only on days the model has never seen, the same way it would work in a real bank.\""
+    },
+    {
+      "file": "tests/test_detectors.py",
+      "line": 11,
+      "selection": { "start": { "line": 11, "character": 1 }, "end": { "line": 17, "character": 1 } },
+      "title": "20. Automatic tests",
+      "description": "Each test builds a tiny case by hand, for example 12 people each sending ₹9,500 to one account, and checks the right detector fires. Other tests check look alikes that should **not** fire.\n\n**Click the command to run all 16 tests:**\n\n>> .\\.venv\\Scripts\\python -m pytest tests -v\n\n**SAY:** \"We have 16 automatic tests covering every detector and the backend. All pass.\""
+    },
+    {
+      "title": "Finish: show the app running",
+      "description": "## Done!\n\nNow show the working app. Either press **F5** (Run and Debug → *1. Fraudbusters Workspace*), or click:\n\n>> .\\.venv\\Scripts\\python -m uvicorn app.server:app --port 8600\n\nthen open http://localhost:8600 in the browser.\n\n**SAY:** \"That's the code. Here is the investigator workspace running on top of it.\"\n\nTo stop the server: click in the terminal and press **Ctrl+C**."
+    }
+  ]
+}
