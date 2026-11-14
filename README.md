@@ -106,6 +106,18 @@ It walks through 22 steps, jumping to each important line with an explanation an
 Tip: click left of a line number in `src/aml.py` (for example inside `detect_cycles`) to set a red breakpoint, then run
 configuration 2: VS Code pauses there and you can inspect the money trail step by step.
 
+### Deploy (public link)
+
+The repo has a `Dockerfile` (server only, pinned to the versions the model was trained with) and a `render.yaml`.
+
+* **Render (free):** sign in at render.com with GitHub, choose **New → Blueprint**, pick this repository, then **Apply**.
+  Render builds the Dockerfile and gives a `https://fraudbusters-….onrender.com` link. Free services sleep after
+  15 minutes idle; the first visit then takes about a minute.
+* **Any Docker host:** `docker build -t fraudbusters .` then `docker run -p 8600:8600 fraudbusters`.
+* **Quick temporary link from a laptop:** run the app, then `cloudflared tunnel --protocol http2 --url http://127.0.0.1:8600`.
+
+The public demo shares one case state for everyone; `data/cases.json` resets when the service restarts.
+
 ### What you can do in the Workspace
 
 * **New to anti money laundering? Start here.** The app opens on a plain English *Start here* page (what it does,

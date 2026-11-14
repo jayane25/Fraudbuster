@@ -1,0 +1,12 @@
+# Only what the Investigator Workspace server needs (used by the Dockerfile for deployment).
+# Versions are pinned to match the ones the saved model was trained with.
+pandas==3.1.1
+numpy==2.5.4
+networkx==3.7
+scikit-learn==1.9.1
+joblib==1.6.0
+fastapi==0.162.7
+uvicorn==0.54.0
+pydantic==2.14.3
+fpdf2==2.9.0
+tabulate==0.10.0

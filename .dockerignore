@@ -1,0 +1,17 @@
+.git
+.venv
+.claude
+.vscode
+.tours
+.pytest_cache
+**/__pycache__
+**/*.pyc
+tests
+docs
+data/HI-Small_Trans.csv
+data/HI-Small_Patterns.txt
+data/cases.json
+data/cases_before_ml.json
+data/*.tmp
+data/train.csv
+data/test.csv

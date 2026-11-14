@@ -1,0 +1,10 @@
+# Render blueprint: one free web service built from the Dockerfile.
+# render.com -> New -> Blueprint -> pick this repository.
+services:
+  - type: web
+    name: fraudbusters
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/meta
+    autoDeploy: true
