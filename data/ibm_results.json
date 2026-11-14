@@ -1,0 +1,88 @@
+{
+  "transactions": 1550148,
+  "laundering_tx": 1119,
+  "alerts": 932,
+  "seconds": 517.9,
+  "period": "01 Sep 2022 to 04 Sep 2022",
+  "metrics": [
+    {
+      "system": "Threshold baseline",
+      "precision": 0.001,
+      "recall": 0.549,
+      "f1": 0.002,
+      "tp": 614,
+      "fp": 751860,
+      "fn": 505
+    },
+    {
+      "system": "FlowTrace (graph)",
+      "precision": 0.002,
+      "recall": 0.083,
+      "f1": 0.005,
+      "tp": 93,
+      "fp": 37459,
+      "fn": 1026
+    }
+  ],
+  "by_pattern": [
+    {
+      "pattern": "bipartite",
+      "laundering_tx": 84,
+      "flowtrace_recall": 0.012,
+      "baseline_recall": 0.548
+    },
+    {
+      "pattern": "cycle",
+      "laundering_tx": 45,
+      "flowtrace_recall": 0.089,
+      "baseline_recall": 0.667
+    },
+    {
+      "pattern": "fan_in",
+      "laundering_tx": 33,
+      "flowtrace_recall": 0.0,
+      "baseline_recall": 0.667
+    },
+    {
+      "pattern": "fan_out",
+      "laundering_tx": 74,
+      "flowtrace_recall": 0.068,
+      "baseline_recall": 0.649
+    },
+    {
+      "pattern": "gather_scatter",
+      "laundering_tx": 66,
+      "flowtrace_recall": 0.182,
+      "baseline_recall": 0.53
+    },
+    {
+      "pattern": "laundering_other",
+      "laundering_tx": 656,
+      "flowtrace_recall": 0.072,
+      "baseline_recall": 0.512
+    },
+    {
+      "pattern": "random",
+      "laundering_tx": 23,
+      "flowtrace_recall": 0.087,
+      "baseline_recall": 0.696
+    },
+    {
+      "pattern": "scatter_gather",
+      "laundering_tx": 67,
+      "flowtrace_recall": 0.328,
+      "baseline_recall": 0.716
+    },
+    {
+      "pattern": "stack",
+      "laundering_tx": 71,
+      "flowtrace_recall": 0.0,
+      "baseline_recall": 0.465
+    }
+  ],
+  "settings": {
+    "days": 3.0,
+    "fan_min": 8,
+    "limit": 10000
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "method": "Graph features + gradient boosted scorer (FlowTrace IBM profile)",
+  "split": "Train 1 to 6 Sep 2022, threshold chosen on 7 Sep, tested on 8 to 10 Sep 2022",
+  "test_transactions": 1317522,
+  "test_laundering": 1493,
+  "base_rate": 0.001133,
+  "threshold": 0.5216,
+  "seconds": 79.5,
+  "metrics": [
+    {
+      "system": "Threshold baseline",
+      "precision": 0.0015,
+      "recall": 0.5727,
+      "f1": 0.003,
+      "tp": 855,
+      "fp": 559694,
+      "fn": 638
+    },
+    {
+      "system": "FlowTrace IBM profile",
+      "precision": 0.4152,
+      "recall": 0.4327,
+      "f1": 0.4237,
+      "tp": 646,
+      "fp": 910,
+      "fn": 847,
+      "pr_auc": 0.431
+    }
+  ],
+  "lift_vs_random": 366.4,
+  "flagged": 1556,
+  "baseline_flagged": 560549
+}

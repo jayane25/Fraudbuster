@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FlowTrace Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<aside class="rail">
+  <div class="brand"><span class="mark"></span><span>Flow<b>Trace</b></span></div>
+  <nav>
+    <a href="#/cases" data-view="cases"><i>▤</i><span>Cases</span><em id="nav-new"></em></a>
+    <a href="#/board" data-view="board"><i>▥</i><span>Board</span></a>
+    <a href="#/overview" data-view="overview"><i>◔</i><span>Overview</span></a>
+    <a href="#/evidence" data-view="evidence"><i>✓</i><span>Evidence</span></a>
+  </nav>
+  <div class="me">
+    <label>Signed in as</label>
+    <select id="me"></select>
+  </div>
+</aside>
+
+<header class="top">
+  <div class="search">
+    <input id="q" placeholder="Search an account or alert, e.g. A0412 or AL0007" autocomplete="off">
+    <div id="hits" class="hits"></div>
+  </div>
+  <div class="top-meta" id="top-meta"></div>
+</header>
+
+<main id="view"></main>
+<div id="toast" class="toast"></div>
+
+<template id="tpl-cases">
+  <section class="cases">
+    <div class="queue">
+      <div class="queue-head">
+        <div class="queue-title"><b>Alert queue</b><span id="queue-count"></span></div>
+        <div class="chips" id="typ-chips"></div>
+        <div class="queue-filters">
+          <select id="f-status"><option value="">All statuses</option></select>
+          <select id="f-sort"><option value="risk">Highest risk</option><option value="amount">Largest amount</option><option value="start">Most recent</option></select>
+        </div>
+      </div>
+      <ol class="queue-list" id="queue"></ol>
+      <div class="kbd">J / K move · F freeze · S STR draft</div>
+    </div>
+
+    <div class="canvas">
+      <div class="case-head" id="case-head"></div>
+      <div class="graph-wrap">
+        <div id="graph"></div>
+        <div class="legend" id="legend"></div>
+        <div class="graph-tools">
+          <button id="g-fit" title="Fit to screen">Fit</button>
+          <button id="g-reset" title="Back to the alert only">Reset</button>
+        </div>
+        <div class="replay">
+          <button id="play" class="play">▶</button>
+          <input type="range" id="scrub" min="0" max="0" value="0">
+          <span id="scrub-label"></span>
+        </div>
+      </div>
+      <div class="tabs" id="case-tabs">
+        <button data-tab="story" class="on">Story</button>
+        <button data-tab="tx">Transactions</button>
+        <button data-tab="notes">Notes and audit</button>
+      </div>
+      <div class="tab-body" id="tab-body"></div>
+    </div>
+
+    <aside class="inspector" id="inspector"></aside>
+  </section>
+</template>
+
+<script src="/static/vendor/cytoscape.min.js"></script>
+<script src="/static/vendor/chart.umd.min.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>

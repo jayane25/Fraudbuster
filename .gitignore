@@ -1,0 +1,17 @@
+# Python environment and caches
+.venv/
+__pycache__/
+*.pyc
+
+# IBM AML dataset: too large for GitHub (454 MB). Download from Kaggle, see README.
+data/HI-Small_Trans.csv
+data/HI-Small_Patterns.txt
+
+# Local case state from the workspace app (notes, freezes)
+data/cases.json
+data/*.tmp
+
+# Editor / tool folders
+.claude/
+.vscode/
+.idea/

@@ -1,0 +1,97 @@
+{
+  "per_bank": {
+    "Bank A": {
+      "visible_tx": 23142,
+      "flagged": 467
+    },
+    "Bank B": {
+      "visible_tx": 21211,
+      "flagged": 720
+    },
+    "Bank C": {
+      "visible_tx": 24956,
+      "flagged": 665
+    }
+  },
+  "siloed": {
+    "precision": 0.852,
+    "recall": 0.866,
+    "f1": 0.859,
+    "tp": 1429,
+    "fp": 249,
+    "fn": 221
+  },
+  "consortium": {
+    "precision": 0.861,
+    "recall": 0.932,
+    "f1": 0.895,
+    "tp": 1538,
+    "fp": 249,
+    "fn": 112
+  },
+  "cases_spanning_banks_pct": 73.8,
+  "recall_by_typology": [
+    {
+      "typology": "cycle",
+      "siloed": 0.529,
+      "consortium": 1.0
+    },
+    {
+      "typology": "fan_in",
+      "siloed": 0.988,
+      "consortium": 0.974
+    },
+    {
+      "typology": "fan_out",
+      "siloed": 0.855,
+      "consortium": 0.855
+    },
+    {
+      "typology": "mule_chain",
+      "siloed": 0.784,
+      "consortium": 1.0
+    }
+  ],
+  "example": [
+    {
+      "tx_id": "TX0000000",
+      "src": "ACC00722",
+      "src_shared": "8632770a9787",
+      "dst": "ACC02401",
+      "dst_shared": "fef44871afb7",
+      "amount": 59.76
+    },
+    {
+      "tx_id": "TX0000001",
+      "src": "ACC02580",
+      "src_shared": "1966f2b1cc03",
+      "dst": "ACC02311",
+      "dst_shared": "b20e2a2de062",
+      "amount": 3219.41
+    },
+    {
+      "tx_id": "TX0000002",
+      "src": "ACC01796",
+      "src_shared": "eee3b043f21a",
+      "dst": "ACC00592",
+      "dst_shared": "e54f433d3779",
+      "amount": 192.55
+    },
+    {
+      "tx_id": "TX0000003",
+      "src": "ACC02966",
+      "src_shared": "9d75a7382e21",
+      "dst": "ACC02004",
+      "dst_shared": "c92091bd77d6",
+      "amount": 1143.15
+    },
+    {
+      "tx_id": "TX0000004",
+      "src": "ACC01175",
+      "src_shared": "e08a621e9bbf",
+      "dst": "ACC02311",
+      "dst_shared": "b20e2a2de062",
+      "amount": 92.85
+    }
+  ]
+}

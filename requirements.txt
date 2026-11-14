@@ -1,0 +1,11 @@
+pandas>=2.2
+numpy>=1.26
+networkx>=3.3
+scikit-learn>=1.5
+streamlit>=1.38
+pyvis>=0.3.2
+plotly>=5.22
+anthropic>=0.40
+fastapi>=0.110
+uvicorn[standard]>=0.29
+fpdf2>=2.7
