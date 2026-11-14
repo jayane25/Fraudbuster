@@ -17,7 +17,7 @@ mule_chain,decoys,2.0,8,1.0
 mule_chain,decoys,5.0,8,1.0
 mule_chain,decoys,10.0,8,1.0
 fan_in,parties,4.0,8,0.0
-fan_in,parties,6.0,8,0.0
+fan_in,parties,6.0,8,0.125
 fan_in,parties,8.0,8,1.0
 fan_in,parties,12.0,8,1.0
 fan_in,parties,20.0,8,1.0

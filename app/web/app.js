@@ -10,7 +10,10 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<
 const riskColor = (r) => r >= 80 ? "#d64933" : r >= 60 ? "#e07a3f" : r >= 40 ? "#c98a16" : "#8a96a6";
 const TYPO_COLOR = { fan_in: "#d64933", fan_out: "#2d5f9a", cycle: "#7a4fb5", mule_chain: "#c98a16" };
 
-const S = { meta: null, alerts: [], cur: null, detail: null, typ: new Set(), status: "", sort: "risk",
+const VERDICT = { laundering: "Likely laundering", genuine: "Likely genuine" };
+const verdictTag = (a) => a.verdict ? `<span class="verdict v-${a.verdict}" title="Hybrid model (rules + ML): ${a.ml}% laundering score">${VERDICT[a.verdict]} · ${Math.round(a.ml)}%</span>` : "";
+
+const S = { meta: null, alerts: [], cur: null, detail: null, typ: new Set(), status: "", verdict: "", sort: "ml",
   me: localGet("ft-me") || "Ini", tab: "story", cy: null, sel: null, playing: null, charts: [] };
 
 function localGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
@@ -92,8 +95,9 @@ function renderCases(id) {
     $("#typ-chips").innerHTML = typs.map(([k, l]) => `<button class="chip ${S.typ.has(k) ? "on" : ""}" data-k="${k}">${esc(l.replace(/ \(.*/, ""))}</button>`).join("");
     $("#typ-chips").onclick = (e) => { const b = e.target.closest(".chip"); if (!b) return; S.typ.has(b.dataset.k) ? S.typ.delete(b.dataset.k) : S.typ.add(b.dataset.k); b.classList.toggle("on"); drawQueue(); };
     $("#f-status").innerHTML += S.meta.statuses.map((s) => `<option>${s}</option>`).join("");
-    $("#f-status").value = S.status; $("#f-sort").value = S.sort;
+    $("#f-status").value = S.status; $("#f-sort").value = S.sort; $("#f-verdict").value = S.verdict;
     $("#f-status").onchange = (e) => { S.status = e.target.value; drawQueue(); };
+    $("#f-verdict").onchange = (e) => { S.verdict = e.target.value; drawQueue(); };
     $("#f-sort").onchange = (e) => { S.sort = e.target.value; drawQueue(); };
     $("#queue").onclick = (e) => { const li = e.target.closest("li"); if (li) location.hash = `#/cases/${li.dataset.id}`; };
     $("#case-tabs").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; S.tab = b.dataset.tab; $$("#case-tabs button").forEach((x) => x.classList.toggle("on", x === b)); drawTab(); };
@@ -109,9 +113,10 @@ function renderCases(id) {
 }
 
 function filtered() {
-  let xs = S.alerts.filter((a) => (!S.typ.size || S.typ.has(a.typology)) && (!S.status || a.status === S.status));
-  const k = S.sort;
-  xs.sort((a, b) => k === "start" ? b.start.localeCompare(a.start) : b[k] - a[k]);
+  let xs = S.alerts.filter((a) => (!S.typ.size || S.typ.has(a.typology)) && (!S.status || a.status === S.status)
+    && (!S.verdict || a.verdict === S.verdict));
+  const k = S.sort === "ml" && S.alerts[0]?.ml == null ? "risk" : S.sort;
+  xs.sort((a, b) => k === "start" ? b.start.localeCompare(a.start) : (b[k] - a[k]) || (b.risk - a.risk));
   return xs;
 }
 
@@ -120,7 +125,7 @@ function drawQueue() {
   $("#queue-count").textContent = `${xs.length} of ${S.alerts.length}`;
   $("#queue").innerHTML = xs.map((a) => `<li data-id="${a.id}">
       <div class="ring" style="--p:${a.risk};--c:${riskColor(a.risk)}"><span>${Math.round(a.risk)}</span></div>
-      <div class="q-main"><b>${a.id}</b><div>${esc(a.label)}</div><small>${a.accounts} accounts · ${a.tx} transfers · ${a.hours} h</small></div>
+      <div class="q-main"><b>${a.id}</b><div>${esc(a.label)}</div>${verdictTag(a)}<small>${a.accounts} accounts · ${a.tx} transfers · ${a.hours} h</small></div>
       <div class="q-side"><span class="amt">${lakh(a.amount)}</span><span class="pill s-${a.status}">${a.status}</span>
         ${a.assignee ? `<span class="avatar" title="${esc(a.assignee)}">${esc(a.assignee[0])}</span>` : ""}</div></li>`).join("");
   markQueue();
@@ -151,7 +156,8 @@ function drawHead() {
       <a class="btn primary" id="c-str" href="/api/alerts/${d.id}/str.pdf" target="_blank" style="text-decoration:none">STR draft</a>
     </div>
     <div class="case-facts">
-      <span>Risk<b style="color:${riskColor(d.risk)}">${Math.round(d.risk)} / 100</b></span>
+      ${d.verdict ? `<span>ML verdict<b class="vt-${d.verdict}">${VERDICT[d.verdict]} ${Math.round(d.ml)}%</b></span>` : ""}
+      <span>Pattern risk<b style="color:${riskColor(d.risk)}">${Math.round(d.risk)} / 100</b></span>
       <span>Money moved<b>${inr(d.amount)}</b></span>
       <span>Accounts<b>${d.accounts}</b></span>
       <span>Transfers<b>${d.tx}</b></span>
@@ -329,12 +335,21 @@ function drawInspector(p) {
 function drawTab() {
   const d = S.detail, el = $("#tab-body"); if (!d || !el) return;
   if (S.tab === "story") {
-    el.innerHTML = `<div class="story"><p>${esc(d.summary)}</p><h3 style="font-size:13px;margin:0 0 6px">Grounds of suspicion</h3>
+    const sig = d.signals || [];
+    const verdictBox = d.verdict ? `<div class="vbox v-${d.verdict}">
+        <div><b>${VERDICT[d.verdict]}</b> · hybrid model score ${Math.round(d.ml)}% (alert threshold ${Math.round(d.ml_threshold)}%)</div>
+        <small>${d.verdict === "genuine"
+          ? "The shape matches a laundering pattern, but the context looks like genuine activity. Suggested action: review and close."
+          : "Both the shape and the context point to laundering. Suggested action: investigate and consider an STR."}</small></div>
+      <h3 style="font-size:13px;margin:12px 0 6px">Genuine or laundering? The evidence</h3>
+      <ul class="signals">${sig.map((s) => `<li class="s-${s.side}"><i>${s.side === "genuine" ? "✓" : "!"}</i>${esc(s.text)}</li>`).join("")}</ul>` : "";
+    el.innerHTML = `<div class="story">${verdictBox}<p>${esc(d.summary)}</p><h3 style="font-size:13px;margin:0 0 6px">Why the rule detector raised it</h3>
       <ul class="grounds">${d.grounds.map((g) => `<li>${esc(g)}</li>`).join("")}</ul></div>`;
   } else if (S.tab === "tx") {
-    el.innerHTML = `<table class="tx"><thead><tr><th>#</th><th>Time</th><th>From</th><th>To</th><th class="r">Amount</th><th>Transfer</th></tr></thead><tbody>
+    const ml = d.transactions[0]?.p != null;
+    el.innerHTML = `<table class="tx"><thead><tr><th>#</th><th>Time</th><th>From</th><th>To</th><th class="r">Amount</th>${ml ? `<th class="r">ML score</th>` : ""}<th>Transfer</th></tr></thead><tbody>
       ${d.transactions.map((t, i) => `<tr><td>${i + 1}</td><td>${fmtT(t.ts)}</td><td><span class="acct" data-a="${t.src}">${t.src}</span></td>
-      <td><span class="acct" data-a="${t.dst}">${t.dst}</span></td><td class="r">${inr(t.amount)}</td><td class="mono">${t.tx_id}</td></tr>`).join("")}</tbody></table>`;
+      <td><span class="acct" data-a="${t.dst}">${t.dst}</span></td><td class="r">${inr(t.amount)}</td>${ml ? `<td class="r">${Math.round(t.p)}%</td>` : ""}<td class="mono">${t.tx_id}</td></tr>`).join("")}</tbody></table>`;
     el.onclick = (e) => { const a = e.target.closest("[data-a]"); a && selectAccount(a.dataset.a); };
   } else {
     const c = d.case;
@@ -405,7 +420,8 @@ async function renderOverview() {
     <div class="kpis">
       <div class="kpi hot"><small>Open alerts</small><b>${open}</b><em>${o.status.New} not yet touched</em></div>
       <div class="kpi"><small>Money in flagged flows</small><b>${lakh(o.money)}</b><em>across ${o.alerts} alerts</em></div>
-      <div class="kpi"><small>Critical risk</small><b>${o.bands["Critical 80+"]}</b><em>score 80 or above</em></div>
+      ${o.verdicts ? `<div class="kpi"><small>Likely genuine look-alikes</small><b>${o.verdicts.genuine}</b><em>donations, payroll, own accounts… cleared by the ML model</em></div>`
+        : `<div class="kpi"><small>Critical risk</small><b>${o.bands["Critical 80+"]}</b><em>score 80 or above</em></div>`}
       <div class="kpi"><small>Freeze requests</small><b>${o.frozen}</b><em>accounts held for review</em></div>
     </div>
     <div class="panels">
@@ -440,8 +456,32 @@ async function renderEvidence() {
   const im = m.ibm_model, ft = im?.metrics.find((x) => x.system !== "Threshold baseline"), bl = im?.metrics.find((x) => x.system === "Threshold baseline");
   const syn = m.synthetic || [];
   const sf = syn.find((x) => x.system !== "Threshold baseline"), sb = syn.find((x) => x.system === "Threshold baseline");
+  const ml = m.ml, mm = ml ? Object.fromEntries(ml.metrics.map((x) => [x.system, x])) : null;
+  const hy = mm?.["Hybrid (rules + ML)"], gr = mm?.["Graph rules (aml.py)"];
+  const fa = ml?.false_alarms_on_genuine_lookalikes;
+  const caseRows = ml ? ml.cases : [];
+  const caught = (k) => caseRows.filter((c) => c.laundering).reduce((s, c) => s + c[k], 0);
+  const falseCases = (k) => caseRows.filter((c) => !c.laundering).reduce((s, c) => s + c[k], 0);
+  const nLaund = caseRows.filter((c) => c.laundering).reduce((s, c) => s + c.cases, 0);
+  const nGen = caseRows.filter((c) => !c.laundering).reduce((s, c) => s + c.cases, 0);
+  const SC = { donation_drive: "Donation drive", relief_redistribution: "Relief redistribution", payroll: "Payroll",
+    chit_fund: "Chit fund", merchant_sales: "Merchant sales", own_account_sweep: "Own account transfers",
+    fan_in: "Fan in", fan_out: "Fan out", cycle: "Round trip", mule_chain: "Mule chain", normal: "Normal" };
   v.innerHTML = `<section class="page">
-    <h2>Evidence</h2><p class="sub">Does it actually work? Tested on our labelled data and on IBM's public benchmark.</p>
+    <h2>Evidence</h2><p class="sub">Does it actually work? Trained on January and February, tested on March (never seen in training), plus IBM's public benchmark.</p>
+    ${ml ? `<div class="callout">
+      <div class="lead"><b>Hybrid model: rule detectors + Random Forest.</b> Train: ${ml.split.train} (${ml.split.train_transactions.toLocaleString("en-IN")} transfers).
+      Test: ${ml.split.test} (${ml.split.test_transactions.toLocaleString("en-IN")} transfers, ${ml.split.test_laundering} laundering), never seen while training.</div>
+      <div><small>F1 on the test month</small><b>${hy.f1.toFixed(2)}</b><em>graph rules alone: ${gr.f1.toFixed(2)} · threshold rules: ${mm["Threshold rules"].f1.toFixed(2)}</em></div>
+      <div><small>Laundering schemes caught</small><b>${caught("Hybrid (rules + ML)")} of ${nLaund}</b><em>graph rules alone: ${caught("Graph rules (aml.py)")}</em></div>
+      <div><small>Genuine look-alikes wrongly flagged</small><b>${falseCases("Hybrid (rules + ML)")} of ${nGen}</b><em>graph rules alone: ${falseCases("Graph rules (aml.py)")} of ${nGen}</em></div>
+      <div><small>Alerts that are real laundering</small><b>${Math.round(hy.precision * 100)}%</b><em>graph rules alone: ${Math.round(gr.precision * 100)}%</em></div>
+    </div>
+    <div class="panels">
+      <div class="panel"><h3>Four systems, same unseen month</h3><p class="cap">Precision, recall and F1 on March transfers</p><div class="chart"><canvas id="m1"></canvas></div></div>
+      <div class="panel"><h3>Genuine or laundering?</h3><p class="cap">Share of each scenario's transfers flagged. Left: genuine look-alikes (lower is better). Right: laundering (higher is better)</p><div class="chart"><canvas id="m2"></canvas></div></div>
+      <div class="panel wide"><h3>What the model looks at</h3><p class="cap">Top 12 features of the hybrid Random Forest (importance). Rule detector outputs and KYC context both matter</p><div class="chart"><canvas id="m3"></canvas></div></div>
+    </div>` : ""}
     ${im ? `<div class="callout">
       <div class="lead"><b>Real data, unseen days.</b> On IBM's AML benchmark Fraudbusters was trained on 1 to 6 Sep and tested on 8 to 10 Sep 2022:
       ${im.test_transactions.toLocaleString("en-IN")} transfers, only ${(im.base_rate * 100).toFixed(2)}% laundering.</div>
@@ -452,7 +492,7 @@ async function renderEvidence() {
     </div>` : ""}
     <div class="panels">
       <div class="panel"><h3>IBM benchmark (real format data)</h3><p class="cap">Precision, recall and F1 on unseen days</p><div class="chart"><canvas id="e1"></canvas></div></div>
-      <div class="panel"><h3>Our labelled dataset</h3><p class="cap">${sf ? `41,564 transfers, 160 planted cases. F1 ${sf.f1} vs ${sb.f1}` : ""}</p><div class="chart"><canvas id="e2"></canvas></div></div>
+      <div class="panel"><h3>Rule detectors on the whole quarter</h3><p class="cap">${sf ? `All ${S.meta.transactions.toLocaleString("en-IN")} transfers, rules only (no ML). F1 ${sf.f1} vs ${sb.f1}` : ""}</p><div class="chart"><canvas id="e2"></canvas></div></div>
       <div class="panel"><h3>Caught by pattern</h3><p class="cap">Share of laundering transfers flagged, labelled dataset</p><div class="chart"><canvas id="e3"></canvas></div></div>
       <div class="panel"><h3>Banks working together</h3><p class="cap">Recall when each bank works alone versus a privacy safe consortium</p><div class="chart"><canvas id="e4"></canvas></div></div>
       ${m.ibm_rules ? `<div class="panel wide"><h3>What did not work, and what we learned</h3><p class="cap" style="font-size:13.5px;line-height:1.55;color:var(--ink)">
@@ -464,6 +504,23 @@ async function renderEvidence() {
   const grouped = (el, rows, labels, keys, names) => chart(el, { type: "bar", data: { labels, datasets: rows.map((r, i) => ({
       label: names[i], data: keys.map((k) => r[k]), backgroundColor: i ? "#d64933" : "#a9b2be", borderRadius: 4 })) },
     options: { maintainAspectRatio: false, plugins: { legend: { position: "bottom" } }, scales: { y: { min: 0, max: 1, grid: { color: "#eceff3" } }, x: { grid: { display: false } } } } });
+  if (ml) {
+    const SYS = [["Threshold rules", "#c9cfd8"], ["Graph rules (aml.py)", "#8a96a6"], ["ML only", "#2d5f9a"], ["Hybrid (rules + ML)", "#d64933"]];
+    chart($("#m1"), { type: "bar", data: { labels: ["Precision", "Recall", "F1"], datasets: SYS.map(([k, c]) => ({
+        label: k, data: ["precision", "recall", "f1"].map((x) => mm[k][x]), backgroundColor: c, borderRadius: 4 })) },
+      options: { maintainAspectRatio: false, plugins: { legend: { position: "bottom" } }, scales: { y: { min: 0, max: 1, grid: { color: "#eceff3" } }, x: { grid: { display: false } } } } });
+    const order = ["donation_drive", "relief_redistribution", "payroll", "chit_fund", "merchant_sales", "own_account_sweep", "fan_in", "fan_out", "cycle", "mule_chain"];
+    const rows = order.map((s) => ml.by_scenario.find((r) => r.scenario === s)).filter(Boolean);
+    chart($("#m2"), { type: "bar", data: { labels: rows.map((r) => (r.laundering ? "⚠ " : "✓ ") + SC[r.scenario]), datasets: [
+        { label: "Graph rules alone", data: rows.map((r) => r["Graph rules (aml.py)"]), backgroundColor: "#a9b2be", borderRadius: 4 },
+        { label: "Hybrid (rules + ML)", data: rows.map((r) => r["Hybrid (rules + ML)"]), backgroundColor: "#d64933", borderRadius: 4 }] },
+      options: { maintainAspectRatio: false, plugins: { legend: { position: "bottom" } }, scales: { y: { min: 0, max: 1, grid: { color: "#eceff3" } }, x: { grid: { display: false }, ticks: { autoSkip: false, maxRotation: 50, font: { size: 10.5 } } } } } });
+    const imp = ml.importance.slice(0, 12);
+    chart($("#m3"), { type: "bar", data: { labels: imp.map((f) => f.label), datasets: [{ label: "Importance", data: imp.map((f) => f.importance),
+        backgroundColor: imp.map((f) => f.feature.startsWith("rule") || ["src_in_alert", "dst_in_alert", "over_limit", "busy_sender"].includes(f.feature) ? "#d64933" : "#2d5f9a"), borderRadius: 4 }] },
+      options: { indexAxis: "y", maintainAspectRatio: false, layout: { padding: { left: 6 } }, plugins: { legend: { display: false }, tooltip: { callbacks: { footer: (i) => imp[i[0].dataIndex].feature } } },
+        scales: { x: { grid: { color: "#eceff3" } }, y: { grid: { display: false } } } } });
+  }
   if (im) grouped($("#e1"), [bl, ft], ["Precision", "Recall", "F1"], ["precision", "recall", "f1"], ["Threshold rules", "Fraudbusters"]);
   if (sf) grouped($("#e2"), [sb, sf], ["Precision", "Recall", "F1"], ["precision", "recall", "f1"], ["Threshold rules", "Fraudbusters"]);
   if (m.by_typology) {

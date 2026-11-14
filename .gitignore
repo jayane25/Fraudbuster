@@ -15,3 +15,4 @@ data/*.tmp
 .claude/
 .idea/
 .pytest_cache/
+data/cases_before_ml.json

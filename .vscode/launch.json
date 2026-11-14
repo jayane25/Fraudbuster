@@ -51,6 +51,14 @@
       "console": "integratedTerminal"
     },
     {
+      "name": "7. Train and test the ML model (hybrid)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/train_model.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
       "name": "6. Run all tests",
       "type": "debugpy",
       "request": "launch",

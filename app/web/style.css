@@ -60,8 +60,8 @@ main { overflow: hidden; min-height: 0; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .chip { border: 1px solid var(--line); background: #fff; border-radius: 14px; padding: 3px 10px; font-size: 12px; color: var(--slate); }
 .chip.on { background: var(--ink); color: #fff; border-color: var(--ink); }
-.queue-filters { display: flex; gap: 8px; }
-.queue-filters select { flex: 1; border: 1px solid var(--line); border-radius: 6px; padding: 5px 6px; background: #fff; font-size: 12.5px; }
+.queue-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; }
+.queue-filters select { min-width: 0; border: 1px solid var(--line); border-radius: 6px; padding: 5px 6px; background: #fff; font-size: 12.5px; }
 .queue-list { list-style: none; margin: 0; padding: 0; overflow-y: auto; flex: 1; }
 .queue-list li { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: center; padding: 11px 14px; border-bottom: 1px solid var(--mist); cursor: pointer; position: relative; }
 .queue-list li:hover { background: var(--bg); }
@@ -203,3 +203,19 @@ table.tx td.r { text-align: right; font-variant-numeric: tabular-nums; }
   .panels { grid-template-columns: 1fr; } .panel.wide { grid-column: auto; }
   .board { grid-template-columns: repeat(5, 220px); overflow-x: auto; }
 }
+
+/* hybrid ML verdicts */
+.verdict { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 10px; padding: 1px 8px; margin: 3px 0 2px; }
+.verdict.v-laundering, .vbox.v-laundering { background: var(--red-soft); color: var(--red); }
+.verdict.v-genuine, .vbox.v-genuine { background: var(--green-soft); color: var(--green); }
+.vt-laundering { color: var(--red) !important; }
+.vt-genuine { color: var(--green) !important; }
+.vbox { border-radius: 8px; padding: 10px 12px; margin-bottom: 4px; }
+.vbox b { font-size: 14px; }
+.vbox small { display: block; color: var(--ink); opacity: .8; margin-top: 3px; }
+.signals { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 5px; }
+.signals li { display: flex; gap: 8px; align-items: baseline; line-height: 1.45; }
+.signals li i { font-style: normal; font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 11px; flex: none; }
+.signals li.s-genuine i { background: var(--green-soft); color: var(--green); }
+.signals li.s-laundering i { background: var(--red-soft); color: var(--red); }
+.panel.wide .chart { height: 300px; }

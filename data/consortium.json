@@ -1,97 +1,97 @@
 {
   "per_bank": {
     "Bank A": {
-      "visible_tx": 23142,
-      "flagged": 467
+      "visible_tx": 26711,
+      "flagged": 1670
     },
     "Bank B": {
-      "visible_tx": 21211,
-      "flagged": 720
+      "visible_tx": 25378,
+      "flagged": 1743
     },
     "Bank C": {
-      "visible_tx": 24956,
-      "flagged": 665
+      "visible_tx": 26818,
+      "flagged": 1664
     }
   },
   "siloed": {
-    "precision": 0.852,
-    "recall": 0.866,
-    "f1": 0.859,
-    "tp": 1429,
-    "fp": 249,
-    "fn": 221
+    "precision": 0.346,
+    "recall": 0.62,
+    "f1": 0.444,
+    "tp": 1583,
+    "fp": 2990,
+    "fn": 972
   },
   "consortium": {
-    "precision": 0.861,
-    "recall": 0.932,
-    "f1": 0.895,
-    "tp": 1538,
-    "fp": 249,
-    "fn": 112
+    "precision": 0.383,
+    "recall": 0.678,
+    "f1": 0.49,
+    "tp": 1732,
+    "fp": 2786,
+    "fn": 823
   },
-  "cases_spanning_banks_pct": 73.8,
+  "cases_spanning_banks_pct": 97.0,
   "recall_by_typology": [
     {
       "typology": "cycle",
-      "siloed": 0.529,
+      "siloed": 0.445,
       "consortium": 1.0
     },
     {
       "typology": "fan_in",
-      "siloed": 0.988,
-      "consortium": 0.974
+      "siloed": 0.827,
+      "consortium": 0.82
     },
     {
       "typology": "fan_out",
-      "siloed": 0.855,
-      "consortium": 0.855
+      "siloed": 0.459,
+      "consortium": 0.457
     },
     {
       "typology": "mule_chain",
-      "siloed": 0.784,
+      "siloed": 0.806,
       "consortium": 1.0
     }
   ],
   "example": [
     {
       "tx_id": "TX0000000",
-      "src": "ACC00722",
-      "src_shared": "8632770a9787",
-      "dst": "ACC02401",
-      "dst_shared": "fef44871afb7",
-      "amount": 59.76
+      "src": "ACC01278",
+      "src_shared": "368f7482a81c",
+      "dst": "ACC00630",
+      "dst_shared": "a35b028bb9f1",
+      "amount": 222.97
     },
     {
       "tx_id": "TX0000001",
-      "src": "ACC02580",
-      "src_shared": "1966f2b1cc03",
-      "dst": "ACC02311",
-      "dst_shared": "b20e2a2de062",
-      "amount": 3219.41
+      "src": "ACC01177",
+      "src_shared": "2ab3508a4942",
+      "dst": "ACC01080",
+      "dst_shared": "fe11377dc14e",
+      "amount": 795.05
     },
     {
       "tx_id": "TX0000002",
-      "src": "ACC01796",
-      "src_shared": "eee3b043f21a",
-      "dst": "ACC00592",
-      "dst_shared": "e54f433d3779",
-      "amount": 192.55
+      "src": "ACC02135",
+      "src_shared": "de7647edcca2",
+      "dst": "ACC02175",
+      "dst_shared": "a74ce86e4694",
+      "amount": 127.53
     },
     {
       "tx_id": "TX0000003",
-      "src": "ACC02966",
-      "src_shared": "9d75a7382e21",
-      "dst": "ACC02004",
-      "dst_shared": "c92091bd77d6",
-      "amount": 1143.15
+      "src": "ACC00397",
+      "src_shared": "ed284bbb661b",
+      "dst": "ACC02096",
+      "dst_shared": "7ebab638f81d",
+      "amount": 184.96
     },
     {
       "tx_id": "TX0000004",
-      "src": "ACC01175",
-      "src_shared": "e08a621e9bbf",
-      "dst": "ACC02311",
-      "dst_shared": "b20e2a2de062",
-      "amount": 92.85
+      "src": "ACC02071",
+      "src_shared": "71ccc5d31563",
+      "dst": "ACC02858",
+      "dst_shared": "19f528b0fc56",
+      "amount": 301.44
     }
   ]
 }

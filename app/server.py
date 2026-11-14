@@ -15,6 +15,7 @@ import sys
 import threading
 from collections import defaultdict
 
+import joblib
 import pandas as pd
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, Response
@@ -24,6 +25,7 @@ from pydantic import BaseModel
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 import aml  # noqa: E402
+import features as F  # noqa: E402
 import str_report  # noqa: E402
 
 DATA = os.path.join(ROOT, "data")
@@ -46,6 +48,36 @@ OUT = {k: g.sort_values("ts") for k, g in DF.groupby("src")}
 INN = {k: g.sort_values("ts") for k, g in DF.groupby("dst")}
 TYPO_LABEL = aml.TYPOLOGY_LABEL
 EMPTY = DF.iloc[0:0]
+
+
+# ------------------------------------------------------------------ hybrid ML model (rules + Random Forest)
+def _load_model():
+    path = os.path.join(ROOT, "models", "fraudbusters_model.joblib")
+    acc_path = os.path.join(DATA, "accounts.csv")
+    if not (os.path.exists(path) and os.path.exists(acc_path)):
+        print("No trained model: run  python src/train_model.py  to enable ML verdicts")
+        return None, None
+    try:
+        return joblib.load(path), F.load_accounts(acc_path)
+    except Exception as e:  # a model saved by another scikit-learn version, a corrupt file, ...
+        print(f"Could not load the model ({e}); retrain with  python src/train_model.py")
+        return None, None
+
+
+BUNDLE, ACC = _load_model()
+if BUNDLE:
+    XF = F.build(DF, ACC, ALERTS)
+    PROB = pd.Series(BUNDLE["model"].predict_proba(XF[BUNDLE["features"]])[:, 1], index=DF.tx_id.to_numpy())
+    THRESHOLD = float(BUNDLE["threshold"])
+    ALERT_ML = {a.alert_id: float(PROB.loc[a.tx_ids].mean()) for a in ALERTS}
+else:
+    XF, PROB, THRESHOLD, ALERT_ML = None, None, None, {}
+
+
+def verdict(aid: str) -> str | None:
+    if aid not in ALERT_ML:
+        return None
+    return "laundering" if ALERT_ML[aid] >= THRESHOLD else "genuine"
 
 _lock = threading.Lock()
 
@@ -82,7 +114,8 @@ def frozen_accounts() -> set:
 # ------------------------------------------------------------------ serialisers
 def tx_row(r) -> dict:
     return {"tx_id": r.tx_id, "src": r.src, "dst": r.dst, "amount": round(float(r.amount), 2),
-            "ts": pd.Timestamp(r.ts).isoformat(), "alert": FLAGGED_TX.get(r.tx_id)}
+            "ts": pd.Timestamp(r.ts).isoformat(), "alert": FLAGGED_TX.get(r.tx_id),
+            "p": round(float(PROB.get(r.tx_id, 0.0)) * 100, 1) if PROB is not None else None}
 
 
 def alert_brief(a: aml.Alert) -> dict:
@@ -91,7 +124,9 @@ def alert_brief(a: aml.Alert) -> dict:
             "accounts": len(a.accounts), "tx": len(a.tx_ids), "amount": round(a.total_amount, 2),
             "start": a.start.isoformat(), "end": a.end.isoformat(), "hours": round(a.hours, 1),
             "focal": a.focal or (a.path[0] if a.path else a.accounts[0]),
-            "status": c["status"], "assignee": c["assignee"], "notes": len(c["notes"])}
+            "status": c["status"], "assignee": c["assignee"], "notes": len(c["notes"]),
+            "ml": round(ALERT_ML[a.alert_id] * 100, 1) if a.alert_id in ALERT_ML else None,
+            "verdict": verdict(a.alert_id)}
 
 
 def profile(acct: str) -> dict:
@@ -131,7 +166,9 @@ def alert_detail(aid: str):
               "alerts": len(ACCT_ALERTS.get(r.account, []))} for r in roles.itertuples()]
     return {**alert_brief(a), "path": a.path, "structure": round(a.structure, 2),
             "summary": aml.template_summary(a, DF), "grounds": str_report.GROUNDS[a.typology],
-            "transactions": [tx_row(r) for r in sub.itertuples()], "nodes": nodes, "case": case(aid)}
+            "transactions": [tx_row(r) for r in sub.itertuples()], "nodes": nodes, "case": case(aid),
+            "signals": F.signals(a, DF, ACC, XF) if BUNDLE else [],
+            "ml_threshold": round(THRESHOLD * 100, 1) if BUNDLE else None}
 
 
 @app.get("/api/accounts/{acct}")
@@ -275,7 +312,10 @@ def overview():
         r = b["risk"]
         k = "Critical 80+" if r >= 80 else "High 60 to 79" if r >= 60 else "Medium 40 to 59" if r >= 40 else "Low under 40"
         bands[k] += 1
+    hidden = int(((PROB >= THRESHOLD) & ~PROB.index.isin(list(FLAGGED_TX))).sum()) if BUNDLE else 0
     return {"alerts": len(briefs), "money": round(sum(b["amount"] for b in briefs), 2),
+            "verdicts": {v: sum(1 for b in briefs if b["verdict"] == v) for v in ("laundering", "genuine")},
+            "ml_only_transfers": hidden,
             "frozen": len(frozen_accounts()), "status": status, "by_typology": by_typ,
             "by_day": dict(sorted(by_day.items())), "bands": bands,
             "top": sorted(briefs, key=lambda b: -b["risk"])[:6]}
@@ -286,6 +326,7 @@ def metrics():
     lab = "is_laundering" in DF
     return {"synthetic": aml.evaluate(DF, ALERTS).reset_index().to_dict("records") if lab else None,
             "by_typology": aml.recall_by_typology(DF, ALERTS).reset_index().to_dict("records") if lab else None,
+            "ml": _json("ml_results.json"),
             "ibm_model": _json("ibm_model_results.json"), "ibm_rules": _json("ibm_results.json"),
             "consortium": _json("consortium.json")}
 

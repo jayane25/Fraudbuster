@@ -1,0 +1,424 @@
+{
+  "method": "Random Forest (300 trees) on graph + KYC features, combined with rule detector outputs (hybrid)",
+  "split": {
+    "train": "1 Jan to 28 Feb 2026",
+    "validation": "15 to 28 Feb 2026 (part of train, picks the threshold)",
+    "test": "1 to 31 Mar 2026",
+    "train_transactions": 31480,
+    "train_laundering": 1884,
+    "test_transactions": 15937,
+    "test_laundering": 671
+  },
+  "thresholds": {
+    "ML only": 0.437,
+    "Hybrid": 0.357
+  },
+  "metrics": [
+    {
+      "system": "Threshold rules",
+      "precision": 0.175,
+      "recall": 0.525,
+      "f1": 0.262,
+      "tp": 352,
+      "fp": 1660,
+      "fn": 319,
+      "flagged": 2012
+    },
+    {
+      "system": "Graph rules (aml.py)",
+      "precision": 0.352,
+      "recall": 0.66,
+      "f1": 0.459,
+      "tp": 443,
+      "fp": 816,
+      "fn": 228,
+      "flagged": 1259
+    },
+    {
+      "system": "ML only",
+      "precision": 0.858,
+      "recall": 0.745,
+      "f1": 0.797,
+      "tp": 500,
+      "fp": 83,
+      "fn": 171,
+      "flagged": 583,
+      "pr_auc": 0.856
+    },
+    {
+      "system": "Hybrid (rules + ML)",
+      "precision": 0.893,
+      "recall": 0.869,
+      "f1": 0.881,
+      "tp": 583,
+      "fp": 70,
+      "fn": 88,
+      "flagged": 653,
+      "pr_auc": 0.93
+    }
+  ],
+  "by_scenario": [
+    {
+      "scenario": "chit_fund",
+      "laundering": false,
+      "transactions": 194,
+      "Threshold rules": 0.227,
+      "Graph rules (aml.py)": 0.088,
+      "ML only": 0.0,
+      "Hybrid (rules + ML)": 0.0
+    },
+    {
+      "scenario": "cycle",
+      "laundering": true,
+      "transactions": 62,
+      "Threshold rules": 1.0,
+      "Graph rules (aml.py)": 1.0,
+      "ML only": 0.952,
+      "Hybrid (rules + ML)": 1.0
+    },
+    {
+      "scenario": "donation_drive",
+      "laundering": false,
+      "transactions": 426,
+      "Threshold rules": 0.028,
+      "Graph rules (aml.py)": 0.462,
+      "ML only": 0.005,
+      "Hybrid (rules + ML)": 0.045
+    },
+    {
+      "scenario": "fan_in",
+      "laundering": true,
+      "transactions": 231,
+      "Threshold rules": 0.104,
+      "Graph rules (aml.py)": 0.892,
+      "ML only": 0.801,
+      "Hybrid (rules + ML)": 0.965
+    },
+    {
+      "scenario": "fan_out",
+      "laundering": true,
+      "transactions": 320,
+      "Threshold rules": 0.65,
+      "Graph rules (aml.py)": 0.366,
+      "ML only": 0.634,
+      "Hybrid (rules + ML)": 0.75
+    },
+    {
+      "scenario": "merchant_sales",
+      "laundering": false,
+      "transactions": 253,
+      "Threshold rules": 0.032,
+      "Graph rules (aml.py)": 0.96,
+      "ML only": 0.0,
+      "Hybrid (rules + ML)": 0.0
+    },
+    {
+      "scenario": "mule_chain",
+      "laundering": true,
+      "transactions": 58,
+      "Threshold rules": 1.0,
+      "Graph rules (aml.py)": 1.0,
+      "ML only": 0.914,
+      "Hybrid (rules + ML)": 1.0
+    },
+    {
+      "scenario": "normal",
+      "laundering": false,
+      "transactions": 13773,
+      "Threshold rules": 0.074,
+      "Graph rules (aml.py)": 0.011,
+      "ML only": 0.006,
+      "Hybrid (rules + ML)": 0.004
+    },
+    {
+      "scenario": "own_account_sweep",
+      "laundering": false,
+      "transactions": 77,
+      "Threshold rules": 1.0,
+      "Graph rules (aml.py)": 0.74,
+      "ML only": 0.0,
+      "Hybrid (rules + ML)": 0.0
+    },
+    {
+      "scenario": "payroll",
+      "laundering": false,
+      "transactions": 449,
+      "Threshold rules": 0.993,
+      "Graph rules (aml.py)": 0.229,
+      "ML only": 0.0,
+      "Hybrid (rules + ML)": 0.002
+    },
+    {
+      "scenario": "relief_redistribution",
+      "laundering": false,
+      "transactions": 94,
+      "Threshold rules": 0.638,
+      "Graph rules (aml.py)": 0.457,
+      "ML only": 0.0,
+      "Hybrid (rules + ML)": 0.0
+    }
+  ],
+  "cases": [
+    {
+      "scenario": "chit_fund",
+      "laundering": false,
+      "cases": 12,
+      "Threshold rules": 2,
+      "Graph rules (aml.py)": 1,
+      "ML only": 0,
+      "Hybrid (rules + ML)": 0
+    },
+    {
+      "scenario": "cycle",
+      "laundering": true,
+      "cases": 15,
+      "Threshold rules": 15,
+      "Graph rules (aml.py)": 15,
+      "ML only": 14,
+      "Hybrid (rules + ML)": 15
+    },
+    {
+      "scenario": "donation_drive",
+      "laundering": false,
+      "cases": 20,
+      "Threshold rules": 0,
+      "Graph rules (aml.py)": 5,
+      "ML only": 0,
+      "Hybrid (rules + ML)": 0
+    },
+    {
+      "scenario": "fan_in",
+      "laundering": true,
+      "cases": 13,
+      "Threshold rules": 0,
+      "Graph rules (aml.py)": 13,
+      "ML only": 11,
+      "Hybrid (rules + ML)": 13
+    },
+    {
+      "scenario": "fan_out",
+      "laundering": true,
+      "cases": 14,
+      "Threshold rules": 10,
+      "Graph rules (aml.py)": 5,
+      "ML only": 12,
+      "Hybrid (rules + ML)": 12
+    },
+    {
+      "scenario": "merchant_sales",
+      "laundering": false,
+      "cases": 9,
+      "Threshold rules": 3,
+      "Graph rules (aml.py)": 6,
+      "ML only": 0,
+      "Hybrid (rules + ML)": 0
+    },
+    {
+      "scenario": "mule_chain",
+      "laundering": true,
+      "cases": 13,
+      "Threshold rules": 13,
+      "Graph rules (aml.py)": 13,
+      "ML only": 13,
+      "Hybrid (rules + ML)": 13
+    },
+    {
+      "scenario": "own_account_sweep",
+      "laundering": false,
+      "cases": 29,
+      "Threshold rules": 29,
+      "Graph rules (aml.py)": 19,
+      "ML only": 0,
+      "Hybrid (rules + ML)": 0
+    },
+    {
+      "scenario": "payroll",
+      "laundering": false,
+      "cases": 15,
+      "Threshold rules": 15,
+      "Graph rules (aml.py)": 5,
+      "ML only": 0,
+      "Hybrid (rules + ML)": 0
+    },
+    {
+      "scenario": "relief_redistribution",
+      "laundering": false,
+      "cases": 6,
+      "Threshold rules": 5,
+      "Graph rules (aml.py)": 3,
+      "ML only": 0,
+      "Hybrid (rules + ML)": 0
+    }
+  ],
+  "false_alarms_on_genuine_lookalikes": {
+    "Threshold rules": {
+      "flagged": 647,
+      "of": 1493,
+      "rate": 0.433
+    },
+    "Graph rules (aml.py)": {
+      "flagged": 660,
+      "of": 1493,
+      "rate": 0.442
+    },
+    "ML only": {
+      "flagged": 2,
+      "of": 1493,
+      "rate": 0.001
+    },
+    "Hybrid (rules + ML)": {
+      "flagged": 20,
+      "of": 1493,
+      "rate": 0.013
+    }
+  },
+  "confusion_hybrid": {
+    "tp": 583,
+    "fp": 70,
+    "fn": 88,
+    "tn": 15196
+  },
+  "importance": [
+    {
+      "feature": "log_amount",
+      "label": "Amount",
+      "importance": 0.1856
+    },
+    {
+      "feature": "rule_structure",
+      "label": "Rule pattern strength",
+      "importance": 0.0923
+    },
+    {
+      "feature": "src_age_days",
+      "label": "Sender account age",
+      "importance": 0.0919
+    },
+    {
+      "feature": "dst_age_days",
+      "label": "Receiver account age",
+      "importance": 0.0861
+    },
+    {
+      "feature": "rule_shape",
+      "label": "Rule shape",
+      "importance": 0.0809
+    },
+    {
+      "feature": "rule_hit",
+      "label": "Rule detector alert",
+      "importance": 0.0761
+    },
+    {
+      "feature": "rule_risk",
+      "label": "Rule risk score",
+      "importance": 0.0748
+    },
+    {
+      "feature": "over_limit",
+      "label": "Threshold rule: \u2265 \u20b910,000",
+      "importance": 0.0342
+    },
+    {
+      "feature": "round_amount",
+      "label": "Round amount",
+      "importance": 0.029
+    },
+    {
+      "feature": "dst_kind",
+      "label": "Receiver account type",
+      "importance": 0.0253
+    },
+    {
+      "feature": "dst_in_72h",
+      "label": "Receiver: transfers in last 72 h",
+      "importance": 0.0212
+    },
+    {
+      "feature": "dst_next_out_h",
+      "label": "Hours until receiver pays out",
+      "importance": 0.0206
+    },
+    {
+      "feature": "src_in_alert",
+      "label": "Sender in a rule alert",
+      "importance": 0.0202
+    },
+    {
+      "feature": "dst_senders_so_far",
+      "label": "Receiver: distinct senders",
+      "importance": 0.0188
+    },
+    {
+      "feature": "src_out_72h",
+      "label": "Sender: payments in last 72 h",
+      "importance": 0.0182
+    },
+    {
+      "feature": "src_paid_before_48h",
+      "label": "Sender was just paid (pass through)",
+      "importance": 0.0179
+    },
+    {
+      "feature": "src_kind",
+      "label": "Sender account type",
+      "importance": 0.0161
+    },
+    {
+      "feature": "src_in_72h",
+      "label": "Sender: money received in last 72 h",
+      "importance": 0.0159
+    },
+    {
+      "feature": "dst_in_72h_cv",
+      "label": "Receiver: how different the amounts are",
+      "importance": 0.0158
+    },
+    {
+      "feature": "dst_forward_48h",
+      "label": "Receiver moves money on within 48 h",
+      "importance": 0.0148
+    },
+    {
+      "feature": "src_payees_so_far",
+      "label": "Sender: distinct payees",
+      "importance": 0.0134
+    },
+    {
+      "feature": "near_limit",
+      "label": "Just under \u20b910,000 limit",
+      "importance": 0.0098
+    },
+    {
+      "feature": "hour",
+      "label": "Hour of day",
+      "importance": 0.0056
+    },
+    {
+      "feature": "pair_before",
+      "label": "Same pair paid before (recurring)",
+      "importance": 0.0048
+    },
+    {
+      "feature": "dst_in_alert",
+      "label": "Receiver in a rule alert",
+      "importance": 0.0045
+    },
+    {
+      "feature": "same_owner",
+      "label": "Same owner",
+      "importance": 0.0029
+    },
+    {
+      "feature": "busy_sender",
+      "label": "Threshold rule: 10+ a day",
+      "importance": 0.0027
+    },
+    {
+      "feature": "reverse_before",
+      "label": "Receiver has paid the sender before",
+      "importance": 0.0005
+    }
+  ],
+  "seconds": 20.7
+}

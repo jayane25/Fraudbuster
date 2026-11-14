@@ -41,8 +41,9 @@
         <div class="queue-title"><b>Alert queue</b><span id="queue-count"></span></div>
         <div class="chips" id="typ-chips"></div>
         <div class="queue-filters">
+          <select id="f-verdict"><option value="">All verdicts</option><option value="laundering">Likely laundering</option><option value="genuine">Likely genuine</option></select>
           <select id="f-status"><option value="">All statuses</option></select>
-          <select id="f-sort"><option value="risk">Highest risk</option><option value="amount">Largest amount</option><option value="start">Most recent</option></select>
+          <select id="f-sort"><option value="ml">ML score</option><option value="risk">Pattern risk</option><option value="amount">Largest amount</option><option value="start">Most recent</option></select>
         </div>
       </div>
       <ol class="queue-list" id="queue"></ol>
