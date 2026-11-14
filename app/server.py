@@ -1,4 +1,4 @@
-"""FlowTrace Investigator Workspace: API + web app.
+"""Fraudbusters Investigator Workspace: API + web app.
 
 Run:  .venv/Scripts/python -m uvicorn app.server:app --port 8600     (from aml-graph-detector/)
 Open: http://localhost:8600
@@ -104,7 +104,7 @@ def profile(acct: str) -> dict:
 
 
 # ------------------------------------------------------------------ app
-app = FastAPI(title="FlowTrace Investigator Workspace")
+app = FastAPI(title="Fraudbusters Investigator Workspace")
 
 
 @app.get("/api/meta")

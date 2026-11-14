@@ -1,4 +1,4 @@
-"""FlowTrace investigation console.   Run:  streamlit run app/dashboard.py"""
+"""Fraudbusters investigation console.   Run:  streamlit run app/dashboard.py"""
 import json
 import os
 import sys
@@ -19,7 +19,7 @@ import early_warning  # noqa: E402
 import scenarios  # noqa: E402
 import str_report  # noqa: E402
 
-st.set_page_config(page_title="FlowTrace · AML Graph Intelligence", page_icon="🕸️", layout="wide")
+st.set_page_config(page_title="Fraudbusters · AML Graph Intelligence", page_icon="🕸️", layout="wide")
 DATA = os.path.join(ROOT, "data")
 TYPO_COLOR = {"fan_in": "#7B3FC4", "fan_out": "#E07A1F", "cycle": "#D7263D", "mule_chain": "#1B998B"}
 RED, GREY, INK = "#D64933", "#A9B2BE", "#0E1A2B"
@@ -81,7 +81,7 @@ def graph_html(sub: pd.DataFrame, focal=None, color=RED, upto=None, height="440p
 
 
 # ------------------------------------------------------------------ sidebar
-st.sidebar.title("🕸️ FlowTrace")
+st.sidebar.title("🕸️ Fraudbusters")
 st.sidebar.caption("Graph based detection of layered money laundering networks · PS 2.1")
 upload = st.sidebar.file_uploader("Transactions CSV (tx_id, src, dst, amount, ts)", type="csv")
 data_key = "upload" if upload else "bundled"
@@ -100,7 +100,7 @@ k2.metric("Accounts", f"{pd.concat([df.src, df.dst]).nunique():,}")
 k3.metric("Alerts (filtered)", f"{len(shown)}", f"{sum(a.risk >= 70 for a in shown)} high risk")
 k4.metric("Money in flagged flows", f"₹{sum(a.total_amount for a in shown):,.0f}")
 
-tabs = st.tabs(["🚨 Alerts", "🎯 Beat FlowTrace", "⏱️ Early warning", "🏦 Bank consortium", "📊 Evaluation", "🧭 How it works"])
+tabs = st.tabs(["🚨 Alerts", "🎯 Beat Fraudbusters", "⏱️ Early warning", "🏦 Bank consortium", "📊 Evaluation", "🧭 How it works"])
 
 # ================================================================== Alerts + replay + STR
 with tabs[0]:
@@ -158,9 +158,9 @@ with tabs[0]:
         with st.expander("Transactions in this alert"):
             st.dataframe(sub[["tx_id", "src", "dst", "amount", "ts"]], hide_index=True, use_container_width=True)
 
-# ================================================================== Beat FlowTrace
+# ================================================================== Beat Fraudbusters
 with tabs[1]:
-    st.subheader("You are the launderer. Try to get money past FlowTrace.")
+    st.subheader("You are the launderer. Try to get money past Fraudbusters.")
     st.caption("Design a scheme. We drop it into real background traffic from the dataset and run the full detector on it, live.")
     if "score" not in st.session_state:
         st.session_state.score = {"tries": 0, "caught": 0}
@@ -189,7 +189,7 @@ with tabs[1]:
                 st.error(f"🚨 CAUGHT in {r['seconds']} s. Flagged as **{al.label}** with risk {al.risk:.0f}/100, "
                          f"covering {r['coverage']:.0%} of your transfers, hidden among {r['background_tx']:,} real ones.")
             else:
-                st.success(f"😈 You got past FlowTrace this time. {r['reason']}")
+                st.success(f"😈 You got past Fraudbusters this time. {r['reason']}")
             atk = r["attack"]
             hub = atk[atk.role == "scheme"].src.mode().iloc[0]
             components.html(graph_html(atk, hub, RED if r["caught"] else GREY, grey_roles=("decoy",)), height=460)
@@ -197,7 +197,7 @@ with tabs[1]:
         else:
             st.info("Pick a scheme on the left and launch it. Try making the mules slower, skimming more, or adding decoys.")
     s = st.session_state.score
-    score_box.metric("Judge score", f"{s['tries'] - s['caught']} escaped of {s['tries']}", f"FlowTrace caught {s['caught']}")
+    score_box.metric("Judge score", f"{s['tries'] - s['caught']} escaped of {s['tries']}", f"Fraudbusters caught {s['caught']}")
 
     rt = load_csv("redteam.csv")
     if rt is not None:
@@ -217,7 +217,7 @@ with tabs[1]:
 # ================================================================== Early warning
 with tabs[2]:
     st.subheader("How early do we raise the alarm?")
-    st.caption("Every laundering case is replayed transfer by transfer. We record the first moment FlowTrace flags it.")
+    st.caption("Every laundering case is replayed transfer by transfer. We record the first moment Fraudbusters flags it.")
     if "is_laundering" not in df.columns:
         st.info("Needs a labelled dataset.")
     else:
@@ -233,7 +233,7 @@ with tabs[2]:
                                           "median_hours_early": "median hours before last transfer"}),
                      hide_index=True, use_container_width=True)
         fig = px.histogram(got, x="pct_complete", color="typology", nbins=20, height=320,
-                           labels={"pct_complete": "% of the scheme completed when FlowTrace raised the alert"},
+                           labels={"pct_complete": "% of the scheme completed when Fraudbusters raised the alert"},
                            color_discrete_map=TYPO_COLOR)
         fig.update_layout(margin=dict(l=0, r=0, t=10, b=0), legend_title_text="")
         st.plotly_chart(fig, use_container_width=True)
@@ -242,7 +242,7 @@ with tabs[2]:
 # ================================================================== Consortium
 with tabs[3]:
     st.subheader("One bank sees a fragment. Together, banks see the ring.")
-    st.caption("Accounts are spread across three simulated banks. Siloed: each bank runs FlowTrace only on transfers touching its "
+    st.caption("Accounts are spread across three simulated banks. Siloed: each bank runs Fraudbusters only on transfers touching its "
                "own customers. Consortium: banks share transfers with account numbers replaced by salted SHA-256 pseudonyms.")
     if "is_laundering" not in df.columns:
         st.info("Needs a labelled dataset.")
@@ -303,7 +303,7 @@ with tabs[4]:
         st.markdown(
             "**How we got here.** Our first run used the synthetic tuned rules unchanged and caught only 8% "
             "(details below). Real launderers wait days between hops, and about 87% of IBM laundering moves over ACH "
-            "against about 12% of all traffic. So for real data FlowTrace turns the graph into features (fan in and "
+            "against about 12% of all traffic. So for real data Fraudbusters turns the graph into features (fan in and "
             "fan out breadth, relay behaviour, payment rail mix, second hop reach) and a gradient boosted scorer ranks "
             "every transfer. Trained on earlier days, tested on later days."
         )
@@ -338,7 +338,7 @@ with tabs[4]:
             "In IBM's data, launderers wait days between hops (our relay rule allowed 48 hours), move money across "
             "currencies (our rule expected each hop to keep 90 to 100% of the amount), and more than half of the "
             "laundering follows no named pattern. The threshold baseline flags about half of all traffic, so its "
-            "recall is not usable in practice. Even untuned, FlowTrace concentrated real laundering into a far smaller "
+            "recall is not usable in practice. Even untuned, Fraudbusters concentrated real laundering into a far smaller "
             "queue, and the IBM profile above is what we built from these lessons."
         )
         with st.expander("Full numbers"):

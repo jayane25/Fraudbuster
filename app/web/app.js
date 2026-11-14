@@ -1,4 +1,4 @@
-/* FlowTrace Investigator Workspace (vanilla JS, Cytoscape, Chart.js) */
+/* Fraudbusters Investigator Workspace (vanilla JS, Cytoscape, Chart.js) */
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const api = async (p, opt) => { const r = await fetch(p, opt); if (!r.ok) throw new Error(await r.text()); return r.json(); };
@@ -401,7 +401,7 @@ async function renderOverview() {
   const typ = Object.entries(o.by_typology);
   const open = o.status.New + o.status.Investigating + o.status.Escalated;
   v.innerHTML = `<section class="page">
-    <h2>Overview</h2><p class="sub">Everything FlowTrace found in this dataset, and where the team is with it.</p>
+    <h2>Overview</h2><p class="sub">Everything Fraudbusters found in this dataset, and where the team is with it.</p>
     <div class="kpis">
       <div class="kpi hot"><small>Open alerts</small><b>${open}</b><em>${o.status.New} not yet touched</em></div>
       <div class="kpi"><small>Money in flagged flows</small><b>${lakh(o.money)}</b><em>across ${o.alerts} alerts</em></div>
@@ -443,7 +443,7 @@ async function renderEvidence() {
   v.innerHTML = `<section class="page">
     <h2>Evidence</h2><p class="sub">Does it actually work? Tested on our labelled data and on IBM's public benchmark.</p>
     ${im ? `<div class="callout">
-      <div class="lead"><b>Real data, unseen days.</b> On IBM's AML benchmark FlowTrace was trained on 1 to 6 Sep and tested on 8 to 10 Sep 2022:
+      <div class="lead"><b>Real data, unseen days.</b> On IBM's AML benchmark Fraudbusters was trained on 1 to 6 Sep and tested on 8 to 10 Sep 2022:
       ${im.test_transactions.toLocaleString("en-IN")} transfers, only ${(im.base_rate * 100).toFixed(2)}% laundering.</div>
       <div><small>Analyst queue</small><b>${im.flagged.toLocaleString("en-IN")}</b><em>threshold rules: ${im.baseline_flagged.toLocaleString("en-IN")}</em></div>
       <div><small>Alerts that are real laundering</small><b>${Math.round(ft.tp / (ft.tp + ft.fp) * 100)}%</b><em>threshold rules: ${(bl.precision * 100).toFixed(2)}%</em></div>
@@ -458,20 +458,20 @@ async function renderEvidence() {
       ${m.ibm_rules ? `<div class="panel wide"><h3>What did not work, and what we learned</h3><p class="cap" style="font-size:13.5px;line-height:1.55;color:var(--ink)">
         Our first IBM run used the rules tuned on our own data, unchanged. They caught only ${Math.round(m.ibm_rules.metrics.find((x) => x.system !== "Threshold baseline").recall * 100)}% of laundering:
         real launderers wait days between hops, and about 87% of IBM laundering moves over ACH against about 12% of all traffic.
-        So for real data FlowTrace turns the graph into features (fan in and fan out breadth, relay behaviour, payment rail mix, second hop reach)
+        So for real data Fraudbusters turns the graph into features (fan in and fan out breadth, relay behaviour, payment rail mix, second hop reach)
         and a gradient boosted scorer ranks every transfer. Each period's features come only from that period, so nothing leaks from the test days.</p></div>` : ""}
     </div></section>`;
   const grouped = (el, rows, labels, keys, names) => chart(el, { type: "bar", data: { labels, datasets: rows.map((r, i) => ({
       label: names[i], data: keys.map((k) => r[k]), backgroundColor: i ? "#d64933" : "#a9b2be", borderRadius: 4 })) },
     options: { maintainAspectRatio: false, plugins: { legend: { position: "bottom" } }, scales: { y: { min: 0, max: 1, grid: { color: "#eceff3" } }, x: { grid: { display: false } } } } });
-  if (im) grouped($("#e1"), [bl, ft], ["Precision", "Recall", "F1"], ["precision", "recall", "f1"], ["Threshold rules", "FlowTrace"]);
-  if (sf) grouped($("#e2"), [sb, sf], ["Precision", "Recall", "F1"], ["precision", "recall", "f1"], ["Threshold rules", "FlowTrace"]);
+  if (im) grouped($("#e1"), [bl, ft], ["Precision", "Recall", "F1"], ["precision", "recall", "f1"], ["Threshold rules", "Fraudbusters"]);
+  if (sf) grouped($("#e2"), [sb, sf], ["Precision", "Recall", "F1"], ["precision", "recall", "f1"], ["Threshold rules", "Fraudbusters"]);
   if (m.by_typology) {
     const L = { fan_in: "Fan in", fan_out: "Fan out", cycle: "Round trip", mule_chain: "Mule chain" };
     const rows = m.by_typology;
     chart($("#e3"), { type: "bar", data: { labels: rows.map((r) => L[r.typology] || r.typology), datasets: [
         { label: "Threshold rules", data: rows.map((r) => r.Baseline), backgroundColor: "#a9b2be", borderRadius: 4 },
-        { label: "FlowTrace", data: rows.map((r) => r.FlowTrace), backgroundColor: "#d64933", borderRadius: 4 }] },
+        { label: "Fraudbusters", data: rows.map((r) => r.FlowTrace), backgroundColor: "#d64933", borderRadius: 4 }] },
       options: { maintainAspectRatio: false, plugins: { legend: { position: "bottom" } }, scales: { y: { min: 0, max: 1, grid: { color: "#eceff3" } }, x: { grid: { display: false } } } } });
   }
   if (m.consortium) {

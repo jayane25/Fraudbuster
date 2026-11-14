@@ -1,6 +1,6 @@
-# FlowTrace — Graph-Based Detection of Layered Money Laundering Networks (PS 2.1)
+# Fraudbusters — Graph-Based Detection of Layered Money Laundering Networks (PS 2.1)
 
-**Team Fraudbusters · Build Beyond '26, BMSCE · PS 2.1** · Slides: [docs/FlowTrace_v4_IBM.pptx](docs/FlowTrace_v4_IBM.pptx)
+**Team Yenrimedia · App: Fraudbusters · Build Beyond '26, BMSCE · PS 2.1** · Slides: [docs/FlowTrace_v4_IBM.pptx](docs/FlowTrace_v4_IBM.pptx)
 
 Transactions → temporal directed weighted graph → typology detectors → risk-ranked clusters → plain-language money trail.
 
@@ -41,10 +41,10 @@ IBM results (HI-Small, trained 1 to 6 Sep, tested on unseen 8 to 10 Sep, 1.32M t
 | System | Precision | Recall | F1 | Flagged |
 |---|---|---|---|---|
 | Threshold baseline | 0.0015 | 0.57 | 0.003 | 560,549 |
-| FlowTrace rules only, untuned (first 3 days) | 0.0025 | 0.08 | 0.005 | 37,552 |
-| FlowTrace IBM profile | 0.42 | 0.43 | 0.42 | 1,556 |
+| Fraudbusters rules only, untuned (first 3 days) | 0.0025 | 0.08 | 0.005 | 37,552 |
+| Fraudbusters IBM profile | 0.42 | 0.43 | 0.42 | 1,556 |
 
-Dashboard tabs: Alerts (replay + STR PDF), Beat FlowTrace (live game + red team), Early warning, Bank consortium, Evaluation (synthetic + IBM), How it works.
+Dashboard tabs: Alerts (replay + STR PDF), Beat Fraudbusters (live game + red team), Early warning, Bank consortium, Evaluation (synthetic + IBM), How it works.
 
 ## Layout
 
@@ -70,7 +70,7 @@ Risk (0–100) = typology weight × (0.40 pattern strength + 0.25 money at stake
 | System | Precision | Recall | F1 |
 |---|---|---|---|
 | Threshold baseline (amount ≥ ₹10k or ≥ 10 tx/day) | 0.41 | 0.49 | 0.45 |
-| FlowTrace | 0.86 | 0.93 | 0.90 |
+| Fraudbusters | 0.86 | 0.93 | 0.90 |
 
 ## Next steps
 
