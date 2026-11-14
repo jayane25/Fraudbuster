@@ -1,4 +1,4 @@
-"""Early warning: replay every laundering case transaction by transaction and record when FlowTrace first flags it.
+"""Early warning: replay every laundering case transaction by transaction and record when Fraudbusters first flags it.
 Answers the question rule engines never ask: how much of the scheme had already happened when we raised the alarm?
 CLI:  python src/early_warning.py   -> data/early_warning.csv
 """

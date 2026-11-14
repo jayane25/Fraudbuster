@@ -1,4 +1,4 @@
-"""FlowTrace IBM profile: graph features + a learned scorer, evaluated on later days than it was trained on.
+"""Fraudbusters IBM profile: graph features + a learned scorer, evaluated on later days than it was trained on.
 
 Why: the hand tuned typology rules in aml.py fit our synthetic data but not IBM's real format data, where
 hops are days apart, more than half the laundering follows no named pattern, and the payment rail matters

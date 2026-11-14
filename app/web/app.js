@@ -471,7 +471,7 @@ async function renderEvidence() {
     const rows = m.by_typology;
     chart($("#e3"), { type: "bar", data: { labels: rows.map((r) => L[r.typology] || r.typology), datasets: [
         { label: "Threshold rules", data: rows.map((r) => r.Baseline), backgroundColor: "#a9b2be", borderRadius: 4 },
-        { label: "Fraudbusters", data: rows.map((r) => r.FlowTrace), backgroundColor: "#d64933", borderRadius: 4 }] },
+        { label: "Fraudbusters", data: rows.map((r) => r.Fraudbusters), backgroundColor: "#d64933", borderRadius: 4 }] },
       options: { maintainAspectRatio: false, plugins: { legend: { position: "bottom" } }, scales: { y: { min: 0, max: 1, grid: { color: "#eceff3" } }, x: { grid: { display: false } } } } });
   }
   if (m.consortium) {

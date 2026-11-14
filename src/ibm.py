@@ -1,4 +1,4 @@
-"""Benchmark FlowTrace on the public IBM AML dataset (Altman et al., 2023).
+"""Benchmark Fraudbusters on the public IBM AML dataset (Altman et al., 2023).
 Download from Kaggle (needs a free login): ealtman2019/ibm-transactions-for-anti-money-laundering-aml
 Put HI-Small_Trans.csv and HI-Small_Patterns.txt in data/.
 

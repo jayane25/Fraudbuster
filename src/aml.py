@@ -1,4 +1,4 @@
-"""FlowTrace detection engine: temporal money-flow graph -> laundering typology alerts.
+"""Fraudbusters detection engine: temporal money-flow graph -> laundering typology alerts.
 
 Pipeline:  load_transactions -> build_graph -> detect_* -> score_alerts -> evaluate
 CLI:       python src/aml.py [path/to/transactions.csv]
@@ -282,7 +282,7 @@ def _prf(y_true, y_pred):
 
 
 def evaluate(df: pd.DataFrame, alerts: list[Alert], min_risk: float = 0.0) -> pd.DataFrame:
-    """Transaction-level precision / recall / F1 for FlowTrace vs the threshold baseline."""
+    """Transaction-level precision / recall / F1 for Fraudbusters vs the threshold baseline."""
     if "is_laundering" not in df.columns:
         raise ValueError("Dataset has no is_laundering label column")
     y = df["is_laundering"].astype(bool)
@@ -290,16 +290,16 @@ def evaluate(df: pd.DataFrame, alerts: list[Alert], min_risk: float = 0.0) -> pd
     ours = df["tx_id"].isin(flagged)
     base = threshold_baseline(df)
     rows = [{"system": "Threshold baseline", **_prf(y, base)},
-            {"system": "FlowTrace (graph)", **_prf(y, ours)}]
+            {"system": "Fraudbusters (graph)", **_prf(y, ours)}]
     return pd.DataFrame(rows).set_index("system")
 
 
 def recall_by_typology(df, alerts) -> pd.DataFrame:
     flagged = {t for a in alerts for t in a.tx_ids}
     bad = df[df.is_laundering == 1].copy()
-    bad["FlowTrace"] = bad.tx_id.isin(flagged)
+    bad["Fraudbusters"] = bad.tx_id.isin(flagged)
     bad["Baseline"] = threshold_baseline(df)[bad.index]
-    return bad.groupby("typology")[["FlowTrace", "Baseline"]].mean().round(3)
+    return bad.groupby("typology")[["Fraudbusters", "Baseline"]].mean().round(3)
 
 
 # ---------------------------------------------------------------- explanations

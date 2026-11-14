@@ -5,14 +5,47 @@ narrative). It is a DRAFT for the analyst to review and file through FINnet, not
 from __future__ import annotations
 
 import datetime as dt
+import os
 
 import pandas as pd
 from fpdf import FPDF
 
 import aml
 
-FONT = "C:/Windows/Fonts/calibri.ttf"
-FONT_B = "C:/Windows/Fonts/calibrib.ttf"
+# Unicode fonts (needed for the rupee sign), tried in order: Windows, Linux, macOS.
+FONT_CANDIDATES = [
+    ("C:/Windows/Fonts/calibri.ttf", "C:/Windows/Fonts/calibrib.ttf"),
+    ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
+    ("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"),
+    ("/System/Library/Fonts/Supplemental/Arial.ttf", "/System/Library/Fonts/Supplemental/Arial Bold.ttf"),
+]
+
+
+def _find_font() -> tuple[str, str] | None:
+    return next(((r, b) for r, b in FONT_CANDIDATES if os.path.exists(r) and os.path.exists(b)), None)
+
+
+class _ReportPDF(FPDF):
+    """FPDF that falls back to the built in Helvetica when no Unicode font is installed,
+    swapping the few characters Helvetica cannot draw (rupee sign, bullet) for plain text."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        found = _find_font()
+        self.unicode_font = found is not None
+        if found:
+            self.add_font("Cal", "", found[0])
+            self.add_font("Cal", "B", found[1])
+
+    def set_font(self, family=None, style="", size=0):
+        if family == "Cal" and not self.unicode_font:
+            family = "helvetica"
+        super().set_font(family, style, size)
+
+    def normalize_text(self, text):
+        if not self.unicode_font:
+            text = text.replace("₹", "Rs ").replace("•", "-")
+        return super().normalize_text(text)
 
 GROUNDS = {
     "fan_in": ["Many unrelated accounts paid one account inside a short window",
@@ -59,10 +92,8 @@ def build(a: aml.Alert, df: pd.DataFrame, narrative: str | None = None, entity: 
           "", "## Transactions", sub[["tx_id", "src", "dst", "amount", "ts"]].to_string(index=False)]
     markdown = "\n".join(md)
 
-    pdf = FPDF(orientation="P", unit="mm", format="A4")
+    pdf = _ReportPDF(orientation="P", unit="mm", format="A4")
     pdf.set_auto_page_break(True, margin=15)
-    pdf.add_font("Cal", "", FONT)
-    pdf.add_font("Cal", "B", FONT_B)
     pdf.add_page()
     W = pdf.w - 2 * pdf.l_margin
 

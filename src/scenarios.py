@@ -1,4 +1,4 @@
-"""Beat FlowTrace: let a person design a laundering scheme, inject it into real background traffic, and see if it is caught.
+"""Beat Fraudbusters: let a person design a laundering scheme, inject it into real background traffic, and see if it is caught.
 Also an automatic red team sweep: how detection holds up as the launderer gets more careful.
 CLI:  python src/scenarios.py   -> data/redteam.csv
 """
@@ -100,11 +100,11 @@ def build_scheme(plan: Plan, accounts: np.ndarray, start: pd.Timestamp) -> pd.Da
 
 def why_missed(plan: Plan) -> str:
     if plan.scheme in ("fan_in", "fan_out") and plan.parties < aml.FAN_MIN_PARTIES:
-        return f"Only {plan.parties} counterparties. FlowTrace looks for {aml.FAN_MIN_PARTIES} or more inside {aml.FAN_WINDOW_H} hours, so this stayed under the radar."
+        return f"Only {plan.parties} counterparties. Fraudbusters looks for {aml.FAN_MIN_PARTIES} or more inside {aml.FAN_WINDOW_H} hours, so this stayed under the radar."
     if plan.scheme in ("fan_in", "fan_out") and plan.gap_h * plan.parties > aml.FAN_WINDOW_H:
         return f"The deposits were spread over {plan.gap_h * plan.parties:.0f} hours, wider than the {aml.FAN_WINDOW_H} hour window."
     if plan.scheme in ("cycle", "mule_chain") and plan.skim_pct > 10:
-        return f"Each hop kept {plan.skim_pct:.0f}%, so amounts stopped matching hop to hop (FlowTrace allows up to 10%)."
+        return f"Each hop kept {plan.skim_pct:.0f}%, so amounts stopped matching hop to hop (Fraudbusters allows up to 10%)."
     if plan.scheme == "mule_chain" and plan.gap_h > aml.PATIENT_GAP_H:
         return f"Hops {plan.gap_h:.0f} hours apart are slower than the {aml.PATIENT_GAP_H} hour patient mule window."
     if plan.scheme == "cycle" and plan.gap_h > aml.CYCLE_MAX_GAP_H:
