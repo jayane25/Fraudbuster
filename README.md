@@ -110,6 +110,7 @@ configuration 2: VS Code pauses there and you can inspect the money trail step b
 
 The repo has a `Dockerfile` (server only, pinned to the versions the model was trained with) and a `render.yaml`.
 
+* **Live now:** https://fraudbuster-3fjf.onrender.com
 * **Render (free):** sign in at render.com with GitHub, choose **New → Blueprint**, pick this repository, then **Apply**.
   Render builds the Dockerfile and gives a `https://fraudbusters-….onrender.com` link. Free services sleep after
   15 minutes idle; the first visit then takes about a minute.

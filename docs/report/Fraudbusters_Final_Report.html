@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fraudbusters: Hackathon Final Report</title>
+<style>
+  @page { size: A4; margin: 20mm 18mm 18mm 18mm;
+    @top-left { content: "Hackathon Final Report  ·  Fraudbusters  ·  Team Yenrimedia"; font: 8pt "Segoe UI", Calibri, sans-serif; color: #7a828c; }
+    @bottom-right { content: "Page " counter(page) " of " counter(pages); font: 8pt "Segoe UI", Calibri, sans-serif; color: #7a828c; } }
+  :root { --ink: #16202c; --slate: #4f5a67; --line: #d9dee5; --soft: #f3f5f8; --red: #c4432f; --redsoft: #fbeae6; --green: #2f7d5b; --greensoft: #e5f2ea; }
+  * { box-sizing: border-box; }
+  body { font: 10.4pt/1.5 "Segoe UI", Calibri, Arial, sans-serif; color: var(--ink); margin: 0; }
+  h1, h2, h3 { font-family: Georgia, Cambria, "Times New Roman", serif; font-weight: 400; color: var(--ink); }
+  h1 { font-size: 25pt; margin: 0 0 2pt; letter-spacing: -.3px; }
+  .subtitle { font-style: italic; color: var(--slate); margin: 0 0 14pt; font-size: 11pt; }
+  h2 { font-size: 18pt; margin: 18pt 0 6pt; break-after: avoid; }
+  h3 { font-size: 13pt; margin: 12pt 0 4pt; break-after: avoid; }
+  p { margin: 0 0 7pt; }
+  ul, ol { margin: 0 0 8pt; padding-left: 16pt; }
+  li { margin: 0 0 2.5pt; }
+  b { font-weight: 600; }
+  a { color: #1f5fa8; text-decoration: none; }
+  table { width: 100%; border-collapse: collapse; margin: 4pt 0 9pt; font-size: 9.4pt; break-inside: avoid; }
+  th, td { border: 1px solid var(--line); padding: 4pt 6pt; text-align: left; vertical-align: top; }
+  th { background: var(--soft); font-weight: 600; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.hi td { background: var(--redsoft); font-weight: 600; }
+  table.details { width: 80%; font-size: 9.6pt; }
+  table.details td { padding: 2.5pt 6pt; }
+  table.details td:first-child { width: 42%; background: #fafbfc; }
+  .new-page { break-before: page; }
+  .note { background: var(--soft); border-left: 3px solid var(--slate); padding: 6pt 9pt; margin: 6pt 0 9pt; font-size: 9.6pt; break-inside: avoid; }
+  .key { background: var(--redsoft); border-left: 3px solid var(--red); padding: 6pt 9pt; margin: 6pt 0 9pt; break-inside: avoid; }
+  figure { margin: 6pt 0 10pt; break-inside: avoid; }
+  figure img { width: 100%; border: 1px solid var(--line); }
+  figcaption { font-size: 8.8pt; color: var(--slate); margin-top: 3pt; font-style: italic; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt; }
+  .small { font-size: 9pt; color: var(--slate); }
+  .refs li { margin-bottom: 4pt; font-size: 9.4pt; }
+  svg text { font-family: "Segoe UI", Calibri, sans-serif; }
+</style>
+</head>
+<body>
+
+<h1>Hackathon Final Report</h1>
+<p class="subtitle">Fraudbusters: catching layered money laundering by reading bank transfers as a network, and telling real laundering apart from genuine activity that looks the same.</p>
+
+<h2 style="margin-top:2pt">Project Details</h2>
+<table class="details">
+  <tr><td>Hackathon</td><td>Build Beyond '26, Gradient Club, AIML Department, BMS College of Engineering</td></tr>
+  <tr><td>Project Title</td><td>Fraudbusters: Graph Based Detection of Layered Money Laundering Networks</td></tr>
+  <tr><td>Problem Statement</td><td>PS 2.1, Graph-Based Detection of Layered Money Laundering Networks (Domain 2: FinTech)</td></tr>
+  <tr><td>Team Name</td><td>Yenrimedia</td></tr>
+  <tr><td>Team Members</td><td>Ini Shetty (1WN25CS095), Jayane Muralimaran (1BF35CS113), Deekshith R (1BM25ME037)</td></tr>
+  <tr><td>Institution</td><td>VTU, Bengaluru</td></tr>
+  <tr><td>GitHub Repository</td><td><a href="https://github.com/jayane25/Fraudbuster">github.com/jayane25/Fraudbuster</a></td></tr>
+  <tr><td>Demo Video / Live Prototype</td><td><a href="https://fraudbuster-3fjf.onrender.com">fraudbuster-3fjf.onrender.com</a> (live prototype)</td></tr>
+  <tr><td>Submitted On</td><td>15 November 2026</td></tr>
+</table>
+
+<h2>1. Analysis of the Problem Statement</h2>
+<h3>1.1 Problem Overview</h3>
+<p>Money launderers hide illegal money by <b>layering</b> it: splitting it into many small deposits, passing it through
+"mule" accounts, or sending it round in loops until its origin is lost. Each single transfer looks ordinary. The crime
+only becomes visible in the <b>connections between accounts</b>, and most bank systems never look at those connections.</p>
+<p>Layering leaves four typical shapes in the flow of money:</p>
+<table>
+  <tr><th>Typology</th><th>What happens</th><th>Shape</th></tr>
+  <tr><td>Fan in (smurfing / structuring)</td><td>Many people deposit small sums, kept just under the reporting limit, into one collector account</td><td>Many → one</td></tr>
+  <tr><td>Fan out (dispersion)</td><td>One account suddenly splits a lump sum to many accounts, which often pass it on again</td><td>One → many</td></tr>
+  <tr><td>Round tripping (cycle)</td><td>Money goes A → B → C → back to A to fake business turnover</td><td>Loop</td></tr>
+  <tr><td>Mule chain (rapid pass through)</td><td>Money hops through accounts that forward it within hours, almost untouched</td><td>Line</td></tr>
+</table>
+<p><b>Who it affects.</b> Bank compliance teams, who are buried in false alerts; investigators at the Financial
+Intelligence Unit (FIU-IND), who need clear, explained reports; ordinary people whose accounts are rented out as money
+mules [3]; and genuine customers, such as charities, employers and chit fund members, whose normal activity has the same
+shapes and can be wrongly flagged or frozen.</p>
+
+<h3>1.2 Causes and Impact</h3>
+<ul>
+  <li><b>Scale.</b> The UNODC estimates that 2 to 5% of global GDP is laundered every year [1].</li>
+  <li><b>Rules look at one transaction at a time.</b> A threshold engine asks "is this transfer above the limit?" and
+    cannot see that twenty transfers below the limit all go to one account.</li>
+  <li><b>The limits are well known.</b> Indian reporting rules for cash transactions above ₹10 lakh and connected series
+    are public [2], so launderers deliberately stay just under them.</li>
+  <li><b>Too many false alarms.</b> Simple rules flag huge volumes of innocent activity. The BIS Project Aurora study found
+    that network analysis could cut false positives by up to 80% [4].</li>
+  <li><b>Genuine activity has the same shapes.</b> A donation drive looks like smurfing, payroll looks like dispersion, and
+    a person moving money between their own accounts looks like a mule chain. Shape-only tools cannot tell them apart.</li>
+  <li><b>Alerts carry no story.</b> Investigators get a score, not an explanation, and must rebuild the money trail by hand
+    before filing a Suspicious Transaction Report (STR).</li>
+</ul>
+<p>Our own measurements show the cost of the current approach:</p>
+<table>
+  <tr><th>Threshold rules (amount ≥ ₹10,000, or 10+ payments a day)</th><th class="n">Alerts raised</th><th class="n">Alerts that were real laundering</th></tr>
+  <tr><td>Our labelled bank, test month (15,937 transfers)</td><td class="n">2,012</td><td class="n">18% (1,660 false alarms)</td></tr>
+  <tr><td>IBM public AML benchmark, unseen days (13,17,522 transfers)</td><td class="n">5,60,549</td><td class="n">0.15%</td></tr>
+</table>
+
+<h2 class="new-page">2. Research Gap</h2>
+<h3>2.1 Existing Solutions</h3>
+<table>
+  <tr><th style="width:24%">Approach</th><th style="width:36%">What it offers</th><th>Where it falls short</th></tr>
+  <tr><td><b>Rule and threshold engines</b> (standard in banks)</td><td>Flags a transfer above a fixed amount, or too many transfers in a day. Simple and auditable.</td><td>Blind to deposits split under the limit and to patterns across accounts; very high false alarm rates [4].</td></tr>
+  <tr><td><b>Machine learning on single transactions</b></td><td>Scores each transfer from its own details: amount, time, account age, channel.</td><td>Still reads rows one by one, so loops and relay chains across accounts never appear.</td></tr>
+  <tr><td><b>Graph neural networks</b> (for example the Elliptic and IBM AML studies [5] [6])</td><td>Learn patterns from the whole transaction network; strong research results.</td><td>Need large labelled datasets and heavy compute; hard to explain to an auditor; return a score with no reason.</td></tr>
+  <tr><td><b>Case management and STR tools</b></td><td>Track investigations and help file reports.</td><td>Depend on the quality of incoming alerts; the investigator still reconstructs the money trail manually.</td></tr>
+  <tr><td><b>Information sharing between banks</b> (for example BIS Project Aurora [4])</td><td>Shows that analysing transfers across institutions catches far more.</td><td>Raises privacy concerns; each bank on its own still sees only a fragment of the network.</td></tr>
+</table>
+
+<h3>2.2 Identified Gap</h3>
+<p>No lightweight tool combines all of the following, which is the gap Fraudbusters fills:</p>
+<ol>
+  <li><b>Sees across accounts.</b> Reads transfers as a temporal, directed, weighted graph and finds the four layering shapes.</li>
+  <li><b>Separates crime from look-alikes.</b> Uses the context a bank already has (account type, age, owner, whether money
+    stays or moves on, whether payments recur) so that donation drives, payroll, chit funds and own-account transfers are
+    not flagged.</li>
+  <li><b>Explains every verdict.</b> Labels each alert with its typology, writes a plain-language summary of the money trail,
+    and lists the evidence for and against laundering.</li>
+  <li><b>Works on modest data.</b> A hybrid of transparent rules and a compact machine learning model, rather than a large
+    black-box network.</li>
+  <li><b>Goes from alert to action.</b> One workspace for investigating, freezing, recording an audit trail and drafting the STR.</li>
+</ol>
+<div class="key"><b>The core idea:</b> the shape tells you that something unusual happened; the context tells you whether it is crime.</div>
+
+<h2 class="new-page">3. Ideation of the Solution</h2>
+<h3>3.1 Proposed Solution</h3>
+<p><b>Fraudbusters</b> is an investigator workspace backed by a hybrid detection engine. Its key features:</p>
+<ul>
+  <li><b>Four typology detectors on a money graph:</b> fan in, fan out, round trip and mule chain, each alert labelled with its typology.</li>
+  <li><b>Risk ranking (0 to 100)</b> so the most dangerous clusters come first.</li>
+  <li><b>Hybrid ML verdict:</b> a Random Forest combines the rule detectors' output with context features and marks each alert
+    <i>Likely laundering</i> or <i>Likely genuine</i>.</li>
+  <li><b>Explained evidence:</b> plain-language reasons such as "registered NGO, open for 8 years", "kept the money: none of it
+    moved on within 48 hours" or "100% of the money left within 48 hours".</li>
+  <li><b>Interactive money trail:</b> graph view, step-by-step replay in time order, and "follow the money" forward or back up to 4 hops.</li>
+  <li><b>Case workflow:</b> status board, assignment, notes, freeze requests and a full audit trail.</li>
+  <li><b>One-click STR draft</b> (PDF) in the information format used for reporting to FIU-IND.</li>
+  <li><b>Beginner friendly:</b> a "Start here" page, a 9-step guided tour and help bubbles on every label.</li>
+  <li><b>Proof built in:</b> an Evidence page with accuracy on unseen data, plus a red-team game, an early-warning replay and a
+    privacy-safe bank consortium simulation.</li>
+</ul>
+<figure>
+  <img src="../screenshot.png" alt="Fraudbusters workspace showing a donation drive marked Likely genuine with its evidence">
+  <figcaption>Figure 1. The workspace: alert queue with AI verdicts, the money map of a donation drive that the shape rules flagged
+  as smurfing, and the evidence that clears it (AI score 1%).</figcaption>
+</figure>
+
+<h3 class="new-page">3.2 How It Works</h3>
+<svg viewBox="0 0 760 200" width="100%" role="img" aria-label="Fraudbusters pipeline">
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#4f5a67"/></marker></defs>
+  <g font-size="11">
+    <rect x="4" y="62" width="118" height="70" rx="8" fill="#f3f5f8" stroke="#d9dee5"/><text x="63" y="90" text-anchor="middle" font-weight="600">Transfers + KYC</text><text x="63" y="108" text-anchor="middle" fill="#4f5a67">47,417 transfers</text><text x="63" y="122" text-anchor="middle" fill="#4f5a67">3,000 accounts</text>
+    <rect x="152" y="62" width="110" height="70" rx="8" fill="#f3f5f8" stroke="#d9dee5"/><text x="207" y="90" text-anchor="middle" font-weight="600">Money graph</text><text x="207" y="108" text-anchor="middle" fill="#4f5a67">accounts = nodes</text><text x="207" y="122" text-anchor="middle" fill="#4f5a67">transfers = edges</text>
+    <rect x="292" y="14" width="150" height="70" rx="8" fill="#f3f5f8" stroke="#d9dee5"/><text x="367" y="40" text-anchor="middle" font-weight="600">4 shape detectors</text><text x="367" y="58" text-anchor="middle" fill="#4f5a67">risk score 0 to 100</text><text x="367" y="72" text-anchor="middle" fill="#4f5a67">8 rule features</text>
+    <rect x="292" y="112" width="150" height="70" rx="8" fill="#f3f5f8" stroke="#d9dee5"/><text x="367" y="138" text-anchor="middle" font-weight="600">Context features</text><text x="367" y="156" text-anchor="middle" fill="#4f5a67">KYC, pass through,</text><text x="367" y="170" text-anchor="middle" fill="#4f5a67">recurring (20 features)</text>
+    <rect x="474" y="62" width="128" height="70" rx="8" fill="#fbeae6" stroke="#e8b7ad"/><text x="538" y="90" text-anchor="middle" font-weight="600">Random Forest</text><text x="538" y="108" text-anchor="middle" fill="#4f5a67">300 trees vote</text><text x="538" y="122" text-anchor="middle" fill="#4f5a67">hybrid model</text>
+    <rect x="632" y="62" width="124" height="70" rx="8" fill="#16202c"/><text x="694" y="88" text-anchor="middle" font-weight="600" fill="#fff">Verdict + reasons</text><text x="694" y="106" text-anchor="middle" fill="#c9d2de">workspace, STR,</text><text x="694" y="120" text-anchor="middle" fill="#c9d2de">audit trail</text>
+  </g>
+  <g stroke="#4f5a67" stroke-width="1.6" fill="none" marker-end="url(#a)">
+    <line x1="122" y1="97" x2="150" y2="97"/><line x1="262" y1="88" x2="290" y2="56"/><line x1="262" y1="106" x2="290" y2="140"/>
+    <line x1="442" y1="50" x2="472" y2="86"/><line x1="442" y1="146" x2="472" y2="110"/><line x1="602" y1="97" x2="630" y2="97"/>
+  </g>
+</svg>
+<p class="small" style="margin-top:-2pt">Figure 2. Workflow: the rules find the shapes, the model weighs them with the context, and the workspace turns the verdict into action.</p>
+
+<p><b>Step 1: graph.</b> Every account becomes a node and every transfer a time-stamped, directed, weighted edge (NetworkX).</p>
+<p><b>Step 2: rule-based shape detectors</b> (<code>src/aml.py</code>):</p>
+<table>
+  <tr><th style="width:22%">Detector</th><th>Rule</th></tr>
+  <tr><td>Fan in / fan out</td><td>8 or more distinct counterparties within a 72 hour sliding window, and a pattern score of at least 0.55 (more parties, amounts just under ₹10,000 or very similar, large total)</td></tr>
+  <tr><td>Round trip</td><td>Money returns to its origin in 3 to 6 hops, each hop within 48 hours, each keeping 90 to 100% of the amount</td></tr>
+  <tr><td>Mule chain</td><td>Fast: 3 or more hops, each within 6 hours, 90 to 100% kept. Patient: 4 or more hops, each within 48 hours, 97 to 100% kept</td></tr>
+  <tr><td>Risk score</td><td>Typology weight × (40% pattern strength + 25% money + 20% speed + 15% number of accounts); weights: round trip 1.0, mule chain 0.95, fan in 0.9, fan out 0.85</td></tr>
+</table>
+<p><b>Step 3: context features</b> (<code>src/features.py</code>), 20 per transfer: amount, just under the limit, round amount, hour;
+KYC (account type, account age, same owner); bursts in the last 72 hours; similarity of amounts; whether the receiver moves the money
+on within 48 hours; whether the sender had just been paid; and whether the same pair has paid each other before.</p>
+<p><b>Step 4: hybrid model</b> (<code>src/train_model.py</code>). A Random Forest of 300 decision trees learns from the 20 context features
+<b>plus 8 rule features</b> (did a detector fire, which shape, its risk and strength, accounts in any alert, threshold rule flags).
+The data is split <b>by date, never shuffled</b>: train on 1 January to 28 February 2026 (31,480 transfers; the last two weeks are
+held out only to pick the alert threshold) and test on March 2026 (15,937 transfers, 671 laundering), which the model never sees.</p>
+<p><b>Step 5: verdict and action.</b> Each alert gets an AI score, a verdict and plain-language evidence; the workspace shows the money
+trail, replay, case actions and the STR draft.</p>
+<table>
+  <tr><th style="width:22%">Layer</th><th>Technology</th></tr>
+  <tr><td>Detection and ML</td><td>Python, pandas, NumPy, NetworkX, scikit-learn (Random Forest; gradient boosting for the IBM benchmark)</td></tr>
+  <tr><td>Backend</td><td>FastAPI, Uvicorn, Pydantic; fpdf2 for STR PDFs</td></tr>
+  <tr><td>Frontend</td><td>HTML, CSS and JavaScript; Cytoscape.js (graph), Chart.js (charts)</td></tr>
+  <tr><td>Quality and delivery</td><td>pytest (21 automated tests), Git and GitHub, Docker, Render (live deployment)</td></tr>
+</table>
+
+<h2>4. Implementation Roadmap</h2>
+<h3>4.1 Work Completed in 24 Hours</h3>
+<p><b>Built and working end to end:</b></p>
+<ul>
+  <li>Labelled synthetic bank: 47,417 transfers, 3,000 accounts with KYC details, 200 planted laundering schemes and 137 genuine
+    look-alike cases (donation drives, relief redistribution, payroll, chit funds, merchant sales, own-account transfers).</li>
+  <li>Graph engine with the four detectors, risk ranking, typology labels and plain-language summaries.</li>
+  <li>Hybrid Random Forest with a date-based train / validation / test split and explained verdicts.</li>
+  <li>Investigator workspace (cases, board, overview, evidence, Start here page, guided tour) with a 12-endpoint API and STR PDFs.</li>
+  <li>Validation on the IBM public AML benchmark, a red team, an early-warning replay and a bank consortium simulation.</li>
+  <li>21 automated tests (detectors, data split and leakage, donation vs smurfing, API), a VS Code guided code tour, and a live deployment.</li>
+</ul>
+<p><b>Results on the unseen test month (March 2026):</b></p>
+<table>
+  <tr><th>System</th><th class="n">Precision</th><th class="n">Recall</th><th class="n">F1</th><th class="n">Alerts</th></tr>
+  <tr><td>Threshold rules (baseline)</td><td class="n">0.18</td><td class="n">0.53</td><td class="n">0.26</td><td class="n">2,012</td></tr>
+  <tr><td>Graph shape rules only</td><td class="n">0.35</td><td class="n">0.66</td><td class="n">0.46</td><td class="n">1,259</td></tr>
+  <tr><td>ML only (no rule features)</td><td class="n">0.86</td><td class="n">0.75</td><td class="n">0.80</td><td class="n">583</td></tr>
+  <tr class="hi"><td>Hybrid: rules + ML (Fraudbusters)</td><td class="n">0.89</td><td class="n">0.87</td><td class="n">0.88</td><td class="n">653</td></tr>
+</table>
+<div class="two">
+<table>
+  <tr><th>Counted per case (March)</th><th class="n">Rules only</th><th class="n">Hybrid</th></tr>
+  <tr><td>Laundering schemes caught</td><td class="n">46 of 55</td><td class="n"><b>53 of 55</b></td></tr>
+  <tr><td>Genuine look-alikes wrongly flagged</td><td class="n">39 of 91</td><td class="n"><b>0 of 91</b></td></tr>
+  <tr><td>Genuine look-alike transfers flagged</td><td class="n">44%</td><td class="n"><b>1.3%</b></td></tr>
+</table>
+<table>
+  <tr><th>IBM benchmark (unseen 8 to 10 Sep 2022)</th><th class="n">Threshold</th><th class="n">Ours</th></tr>
+  <tr><td>F1</td><td class="n">0.003</td><td class="n"><b>0.42</b></td></tr>
+  <tr><td>Alerts that are real laundering</td><td class="n">0.15%</td><td class="n"><b>42%</b></td></tr>
+  <tr><td>Alerts to review</td><td class="n">5,60,549</td><td class="n"><b>1,556</b></td></tr>
+</table>
+</div>
+<p class="small">The hybrid's accuracy is 99.0% and its PR-AUC 0.93; we lead with F1 because laundering is rare (4.2% of test transfers),
+so a model that flags nothing would still score 95.8% accuracy. In early-warning replay, 180 of 200 schemes were flagged while still
+in progress (smurfing a median 36 hours before the last deposit). In the consortium simulation, sharing hashed account IDs across three
+banks raised round-trip and mule-chain recall to 100%.</p>
+<p><b>Challenges we faced and how we solved them:</b></p>
+<ol>
+  <li><b>Rules did not transfer to real-format data.</b> On the IBM benchmark our hand-tuned rules caught only 8%, because hops are days
+    apart. We turned the graph ideas into learned features and computed them separately per time period to avoid leakage (F1 0.42).</li>
+  <li><b>Genuine look-alikes.</b> Once donations, payroll and chit funds were added, the shape rules wrongly flagged 44% of them. Adding KYC
+    context and the hybrid model brought this to 1.3% while catching more laundering.</li>
+  <li><b>Honest evaluation.</b> A random split would leak future information, so we split by date and wrote tests that check the split and
+    that history features never look into the future.</li>
+  <li><b>Usability.</b> The first workspace overwhelmed newcomers, so we added the Start here page, a guided tour and help on every label.</li>
+</ol>
+<div class="note"><b>Limits we state openly:</b> both datasets are simulated because real bank data is confidential; account age is a strong
+feature partly by our data design and must be re-checked on real KYC data; two features look 48 hours ahead, so a transfer is scored once
+48 hours have passed; our red team still beats the rules with hops more than 48 hours apart or fewer than 8 smurfs.</div>
+
+<h3>4.2 Future Roadmap</h3>
+<table>
+  <tr><th style="width:20%">Phase</th><th style="width:16%">Timeline</th><th>Work</th></tr>
+  <tr><td><b>1. Pilot</b></td><td>Months 1 to 2</td><td>Run on a partner bank's anonymised data under NDA; re-validate the KYC features; analyst login and roles; move case data
+    to PostgreSQL; tune thresholds per bank.</td></tr>
+  <tr><td><b>2. Real time and scale</b></td><td>Months 3 to 4</td><td>Stream transfers as they happen (message queue); graph database (Neo4j) for millions of accounts;
+    model monitoring and retraining; extend the hybrid model to the IBM benchmark.</td></tr>
+  <tr><td><b>3. Deeper intelligence</b></td><td>Months 5 to 6</td><td>Graph neural network experiments alongside the explainable model; AI-written case notes; more typologies
+    (trade-based laundering, crypto off-ramps).</td></tr>
+  <tr><td><b>4. Ecosystem</b></td><td>Months 7 to 12</td><td>Privacy-safe consortium across banks using hashed account IDs; STR export compatible with FIU-IND FINnet;
+    security review and compliance certification.</td></tr>
+</table>
+<p><b>Resources needed:</b></p>
+<ul>
+  <li><b>Team:</b> 2 backend / ML engineers, 1 frontend engineer, and an AML compliance advisor.</li>
+  <li><b>Data:</b> access to anonymised transaction and KYC data from a pilot bank or fintech, under a data-sharing agreement.</li>
+  <li><b>Infrastructure:</b> a cloud server with a managed database (small at pilot stage, scaling with volume), plus streaming and monitoring tools.</li>
+  <li><b>Validation:</b> feedback from bank investigators to tune alerts and the wording of evidence and STR drafts.</li>
+</ul>
+
+<h2>5. SDG Mapping</h2>
+<table>
+  <tr><th style="width:26%">Goal and target</th><th>How Fraudbusters contributes</th><th style="width:25%">Impact indicator</th></tr>
+  <tr><td><b>SDG 16</b>: Peace, Justice and Strong Institutions. <b>Target 16.4</b>: significantly reduce illicit financial flows [7] (primary)</td>
+    <td>Exposes the networks that move illicit money, so banks can stop flows while they are still in progress and report them with clear evidence.</td>
+    <td>Laundering schemes caught; F1 against the rule baseline; money still moving when flagged</td></tr>
+  <tr><td><b>SDG 8</b>: Decent Work and Economic Growth. <b>Target 8.10</b>: strengthen domestic financial institutions [8]</td>
+    <td>Gives banks a sharper and cheaper way to run anti-money-laundering checks, and avoids freezing genuine customers such as charities and employers.</td>
+    <td>False alarms removed; genuine look-alikes cleared</td></tr>
+  <tr><td><b>SDG 17</b>: Partnerships for the Goals. <b>Target 17.1</b>: strengthen domestic resource mobilisation [9]</td>
+    <td>Money pulled back from hidden channels into the open economy can be taxed; the consortium design lets banks cooperate without sharing customer identities.</td>
+    <td>Value of flagged flows (₹); cases spanning more than one bank</td></tr>
+</table>
+
+<h2>References</h2>
+<ol class="refs">
+  <li>UNODC, Money laundering overview (2 to 5% of global GDP laundered each year). <a href="https://www.unodc.org/unodc/en/money-laundering/overview.html">unodc.org/unodc/en/money-laundering/overview.html</a></li>
+  <li>Financial Intelligence Unit India, Ministry of Finance, PMLA reporting FAQs (cash transactions above ₹10 lakh and connected series). <a href="https://fiuindia.gov.in/files/FAQs/faqs.html">fiuindia.gov.in/files/FAQs/faqs.html</a></li>
+  <li>Europol, Money muling: public awareness and prevention guide. <a href="https://www.europol.europa.eu/operations-services-and-innovation/public-awareness-and-prevention-guides/money-muling">europol.europa.eu</a></li>
+  <li>Bank for International Settlements, Project Aurora (2023): network analysis across institutions, up to 80% fewer false positives. <a href="https://www.bis.org/publ/othp66.htm">bis.org/publ/othp66.htm</a></li>
+  <li>Weber et al. (2019), Anti-Money Laundering in Bitcoin: Experimenting with Graph Convolutional Networks for Financial Forensics. <a href="https://arxiv.org/abs/1908.02591">arxiv.org/abs/1908.02591</a></li>
+  <li>Altman et al. (2023), Realistic Synthetic Financial Transactions for Anti-Money Laundering Models (IBM AML dataset). <a href="https://arxiv.org/abs/2306.16424">arxiv.org/abs/2306.16424</a></li>
+  <li>United Nations, SDG 16, Target 16.4. <a href="https://sdgs.un.org/goals/goal16">sdgs.un.org/goals/goal16</a></li>
+  <li>United Nations, SDG 8, Target 8.10. <a href="https://sdgs.un.org/goals/goal8">sdgs.un.org/goals/goal8</a></li>
+  <li>United Nations, SDG 17, Target 17.1. <a href="https://sdgs.un.org/goals/goal17">sdgs.un.org/goals/goal17</a></li>
+  <li>IBM Transactions for Anti Money Laundering (HI-Small), Kaggle dataset used for the real-format benchmark. <a href="https://www.kaggle.com/datasets/ealtman2019/ibm-transactions-for-anti-money-laundering-aml">kaggle.com/datasets/ealtman2019/ibm-transactions-for-anti-money-laundering-aml</a></li>
+  <li>Build Beyond '26 problem statements, PS 2.1, Gradient Club, AIML Department, BMS College of Engineering.</li>
+</ol>
+<p class="small">All prototype, machine learning, red team, early warning and consortium figures come from our own code, published at
+<a href="https://github.com/jayane25/Fraudbuster">github.com/jayane25/Fraudbuster</a> (results in <code>data/ml_results.json</code> and <code>data/ibm_model_results.json</code>).</p>
+
+</body>
+</html>
